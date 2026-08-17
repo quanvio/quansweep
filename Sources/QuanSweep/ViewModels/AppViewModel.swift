@@ -54,15 +54,7 @@ final class AppViewModel: ObservableObject {
     func cleanSelected() async {
         let items = categories.flatMap { $0.selectedItems }
         guard !items.isEmpty else { return }
-
-        statusMessage = "Moving \(items.count) items to quarantine..."
-        let session = await quarantine.quarantine(items: items)
-        lastResult = session
-        statusMessage = "Moved \(ByteCountFormatter.string(fromByteCount: Int64(session.totalSize), countStyle: .file)) to quarantine."
-
-        // Rescan categories to update sizes
-        await rescanCategories()
-        await loadQuarantine()
+        await quarantine(items: items)
     }
 
     func restore(session: QuarantineSession) async {
@@ -75,6 +67,55 @@ final class AppViewModel: ObservableObject {
 
     func loadQuarantine() async {
         quarantineSessions = await quarantine.sessions()
+    }
+
+    func cleanAllSafe() async {
+        let safeItems = categories.flatMap { $0.items.filter { $0.safety == .safe && !$0.isLocked } }
+        guard !safeItems.isEmpty else { return }
+        await quarantine(items: safeItems)
+    }
+
+    func quarantine(item: CleanupItem) async {
+        await quarantine(items: [item])
+    }
+
+    func deletePermanently(item: CleanupItem) async -> Bool {
+        let url = URL(fileURLWithPath: item.path)
+        do {
+            try FileManager.default.removeItem(at: url)
+            await AuditLogger.shared.log(action: "delete", path: item.path, size: item.size, details: "Permanently deleted from \(item.categoryID)")
+            await rescanCategories()
+            return true
+        } catch {
+            statusMessage = "Could not delete: \(error.localizedDescription)"
+            return false
+        }
+    }
+
+    @discardableResult
+    func revealInFinder(item: CleanupItem) -> Bool {
+        NSWorkspace.shared.selectFile(item.path, inFileViewerRootedAtPath: "")
+        return true
+    }
+
+    func ignore(item: CleanupItem) {
+        for catIndex in categories.indices {
+            if let idx = categories[catIndex].items.firstIndex(where: { $0.id == item.id }) {
+                categories[catIndex].items[idx].isSelected = false
+            }
+        }
+        statusMessage = "Ignored \(item.name)"
+    }
+
+    // MARK: - Private
+
+    private func quarantine(items: [CleanupItem]) async {
+        statusMessage = "Moving \(items.count) items to quarantine..."
+        let session = await quarantine.quarantine(items: items)
+        lastResult = session
+        statusMessage = "Moved \(ByteCountFormatter.string(fromByteCount: Int64(session.totalSize), countStyle: .file)) to quarantine."
+        await rescanCategories()
+        await loadQuarantine()
     }
 
     private func rescanCategories() async {

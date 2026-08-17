@@ -2,6 +2,7 @@ import SwiftUI
 
 struct ScanView: View {
     @EnvironmentObject var viewModel: AppViewModel
+    @State private var selectedItem: CleanupItem?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -14,6 +15,9 @@ struct ScanView: View {
             bottomBar
         }
         .navigationTitle("Scan Results")
+        .sheet(item: $selectedItem) { item in
+            ItemDetailView(item: item)
+        }
     }
 
     private var emptyState: some View {
@@ -42,7 +46,7 @@ struct ScanView: View {
             ForEach($viewModel.categories) { $category in
                 Section {
                     ForEach($category.items) { $item in
-                        ItemRow(item: $item)
+                        ItemRow(item: $item, selectedItem: $selectedItem)
                             .listRowSeparator(.hidden)
                             .listRowInsets(EdgeInsets(top: 4, leading: 12, bottom: 4, trailing: 12))
                     }
@@ -130,6 +134,7 @@ struct CategoryHeader: View {
 
 struct ItemRow: View {
     @Binding var item: CleanupItem
+    @Binding var selectedItem: CleanupItem?
 
     var body: some View {
         HStack(spacing: 12) {
@@ -156,6 +161,15 @@ struct ItemRow: View {
             Text(item.formattedSize)
                 .font(.caption.monospacedDigit())
                 .foregroundStyle(.secondary)
+
+            Button {
+                selectedItem = item
+            } label: {
+                Image(systemName: "info.circle")
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+            .help("Inspect this item")
         }
         .padding(10)
         .background(item.isLocked ? Color.gray.opacity(0.08) : Color.clear)

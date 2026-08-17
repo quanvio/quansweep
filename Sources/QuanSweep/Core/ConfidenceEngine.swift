@@ -3,13 +3,24 @@ import Foundation
 /// Scores cleanup candidates from 0 (never touch) to 100 (definitely safe).
 enum ConfidenceEngine {
 
+    private static let protectedVendors: Set<String> = [
+        "apple", "com.apple",
+        "google", "com.google",
+        "microsoft", "com.microsoft"
+    ]
+
+    private static let knownDeveloperPrefixes = [
+        "go-build", "node", "npm", "yarn", "pnpm", "bun", "cargo", "pip", "uv", "xcode"
+    ]
+
     /// App residue confidence based on installed apps and bundle ID matching.
     static func residueConfidence(
         path: String,
         bundleID: String?,
         appName: String?,
         installedBundleIDs: Set<String>,
-        installedAppNames: Set<String>
+        installedAppNames: Set<String>,
+        modifiedAt: Date
     ) -> (score: Int, reason: String, safety: SafetyLevel) {
         let lowerPath = path.lowercased()
 
@@ -20,27 +31,49 @@ enum ConfidenceEngine {
 
         let bid = bundleID?.lowercased() ?? ""
         let name = appName?.lowercased() ?? ""
+        let ageDays = Int(Date().timeIntervalSince(modifiedAt) / 86400)
 
-        // Exact bundle ID match and app not installed → very safe orphan.
-        if !bid.isEmpty, !installedBundleIDs.contains(bid) {
-            return (99, "App with bundle ID '\(bid)' is not installed.", .safe)
+        // Vendor umbrella folders (e.g. "Google", "Microsoft") are risky because they
+        // can hold data for multiple apps. Only safe if no app from that vendor is installed.
+        if protectedVendors.contains(name) || protectedVendors.contains(bid) {
+            let vendorApps = installedAppNames.filter { installed in
+                protectedVendors.contains { installed.lowercased().contains($0) || $0.contains(installed.lowercased()) }
+            }
+            if vendorApps.isEmpty {
+                return (70, "Vendor folder for uninstalled apps. Review before removing.", .review)
+            }
+            return (10, "Vendor folder may contain data for installed apps.", .review)
         }
 
-        // App name match and not installed → likely safe.
-        if !name.isEmpty, !installedAppNames.contains(name) {
-            return (90, "No installed app matches '\(name)'.", .safe)
+        // Exact bundle ID match and app not installed → orphan.
+        if !bid.isEmpty {
+            if installedBundleIDs.contains(bid) {
+                return (40, "App is still installed. This may be active user data.", .review)
+            } else {
+                if ageDays > 30 {
+                    return (99, "Orphan residue. App not installed and untouched for \(ageDays) days.", .safe)
+                } else if ageDays > 7 {
+                    return (95, "Orphan residue. App not installed.", .safe)
+                } else {
+                    return (85, "Orphan residue but modified recently. Review if unsure.", .review)
+                }
+            }
         }
 
-        // Installed app → review, could be active data.
-        if !bid.isEmpty, installedBundleIDs.contains(bid) {
-            return (40, "App is still installed. May be active user data.", .review)
+        // Plain app name match.
+        if !name.isEmpty {
+            if installedAppNames.contains(name) {
+                return (45, "App is still installed. Review before removing.", .review)
+            }
+            // Name is similar to an installed app?
+            let similar = installedAppNames.first { $0.contains(name) || name.contains($0) }
+            if let similar = similar {
+                return (30, "Looks like '\(similar)', which is installed. Review.", .review)
+            }
+            return (75, "No installed app matches this name.", .review)
         }
 
-        if !name.isEmpty, installedAppNames.contains(name) {
-            return (45, "App is still installed. Review before removing.", .review)
-        }
-
-        return (60, "Unknown residue. Review recommended.", .review)
+        return (50, "Unknown residue. Review recommended.", .review)
     }
 
     /// Cache confidence based on owner and running state.
@@ -55,13 +88,17 @@ enum ConfidenceEngine {
             return (0, "Apple cache. Protected.", .protected)
         }
 
+        let name = appName?.lowercased() ?? ""
+        if protectedVendors.contains(name) {
+            return (25, "Vendor cache folder may contain data for multiple apps.", .review)
+        }
+
         if isRunning {
             return (30, "Application may be running. Skip to avoid crashes.", .review)
         }
 
         // Known developer tools caches are regeneratable.
-        let developerIds = ["go-build", "node", "npm", "yarn", "pnpm", "bun", "cargo", "pip", "uv", "xcode"]
-        for id in developerIds {
+        for id in knownDeveloperPrefixes {
             if lowerPath.contains(id) {
                 return (95, "Developer tool cache. Regeneratable.", .safe)
             }

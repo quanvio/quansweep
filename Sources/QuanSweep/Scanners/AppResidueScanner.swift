@@ -55,13 +55,15 @@ struct AppResidueScanner: Scanner {
             let size = FileSystem.directorySize(at: fullPath)
             guard size > 1024 else { continue }
 
+            let modDate = FileSystem.modificationDate(at: fullPath) ?? Date()
             let (bundleID, appName) = extractIdentifiers(from: entry)
             let (score, reason, safety) = ConfidenceEngine.residueConfidence(
                 path: fullPath,
                 bundleID: bundleID,
                 appName: appName,
                 installedBundleIDs: installedBIDs,
-                installedAppNames: installedNames
+                installedAppNames: installedNames,
+                modifiedAt: modDate
             )
 
             items.append(CleanupItem(

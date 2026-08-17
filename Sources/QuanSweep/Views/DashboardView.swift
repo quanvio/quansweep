@@ -9,7 +9,7 @@ struct DashboardView: View {
                 headerCard
 
                 HStack(spacing: 16) {
-                    statCard(title: "Total Scanned", value: viewModel.summary.totalScanned, color: .blue)
+                    statCard(title: "Reclaimable Now", value: viewModel.summary.safeToClean + viewModel.summary.reviewRequired, color: .blue)
                     statCard(title: "Safe to Clean", value: viewModel.summary.safeToClean, color: .green)
                     statCard(title: "Needs Review", value: viewModel.summary.reviewRequired, color: .orange)
                 }
@@ -35,19 +35,35 @@ struct DashboardView: View {
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 600)
 
-            Button(action: {
-                Task { await viewModel.scan() }
-            }) {
-                HStack(spacing: 8) {
-                    Image(systemName: "magnifyingglass")
-                    Text(viewModel.isScanning ? "Scanning..." : "Start Scan")
+            HStack(spacing: 12) {
+                Button(action: {
+                    Task { await viewModel.scan() }
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "magnifyingglass")
+                        Text(viewModel.isScanning ? "Scanning..." : "Start Scan")
+                    }
+                    .font(.system(size: 15, weight: .semibold))
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
                 }
-                .font(.system(size: 15, weight: .semibold))
-                .padding(.horizontal, 24)
-                .padding(.vertical, 12)
+                .buttonStyle(.borderedProminent)
+                .disabled(viewModel.isScanning)
+
+                Button(action: {
+                    Task { await viewModel.cleanAllSafe() }
+                }) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "wand.and.stars")
+                        Text("Clean All Safe")
+                    }
+                    .font(.system(size: 15, weight: .semibold))
+                    .padding(.horizontal, 24)
+                    .padding(.vertical, 12)
+                }
+                .buttonStyle(.bordered)
+                .disabled(viewModel.summary.safeToClean == 0 || viewModel.isScanning)
             }
-            .buttonStyle(.borderedProminent)
-            .disabled(viewModel.isScanning)
             .padding(.top, 8)
         }
         .padding(32)
@@ -87,7 +103,9 @@ struct DashboardView: View {
 
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 220))], spacing: 12) {
                 ForEach(viewModel.categories) { category in
-                    CategoryMiniCard(category: category)
+                    CategoryMiniCard(category: category) {
+                        viewModel.selectedTab = .scan
+                    }
                 }
             }
         }
@@ -96,28 +114,37 @@ struct DashboardView: View {
 
 struct CategoryMiniCard: View {
     let category: CleanupCategory
+    let action: () -> Void
 
     var body: some View {
-        HStack(spacing: 14) {
-            Image(systemName: category.icon)
-                .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(Color.accentColor)
-                .frame(width: 40, height: 40)
-                .background(Color.accentColor.opacity(0.12))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
+        Button(action: action) {
+            HStack(spacing: 14) {
+                Image(systemName: category.icon)
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundStyle(Color.accentColor)
+                    .frame(width: 40, height: 40)
+                    .background(Color.accentColor.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
 
-            VStack(alignment: .leading, spacing: 2) {
-                Text(category.name)
-                    .font(.system(size: 14, weight: .semibold))
-                Text(ByteCountFormatter.string(fromByteCount: Int64(category.totalSize), countStyle: .file))
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(category.name)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(.primary)
+                    Text(ByteCountFormatter.string(fromByteCount: Int64(category.totalSize), countStyle: .file))
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-
-            Spacer()
+            .padding(14)
+            .background(.ultraThinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 14))
         }
-        .padding(14)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 14))
+        .buttonStyle(.plain)
     }
 }
