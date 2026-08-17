@@ -219,6 +219,149 @@ struct DetailRow: View {
     }
 }
 
+// MARK: - Speedometer Gauge
+
+struct SpeedometerGauge: View {
+    let value: Double
+    let maxValue: Double
+    let title: String
+    let subtitle: String
+
+    private var progress: Double {
+        maxValue > 0 ? min(max(value / maxValue, 0), 1) : 0
+    }
+
+    var body: some View {
+        GeometryReader { geo in
+            let size = min(geo.size.width, geo.size.height)
+            let lineWidth: CGFloat = max(10, size * 0.055)
+            let radius = (size - lineWidth) / 2
+
+            ZStack {
+                // Background arc
+                ArcShape(startAngle: 135, endAngle: 405)
+                    .stroke(Color.white.opacity(0.06), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
+
+                // Colored zones
+                ArcShape(startAngle: 135, endAngle: 225)
+                    .stroke(AppColors.accentGreen, style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
+                ArcShape(startAngle: 225, endAngle: 315)
+                    .stroke(AppColors.accentOrange, style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
+                ArcShape(startAngle: 315, endAngle: 405)
+                    .stroke(AppColors.accentRed, style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
+
+                // Tick marks
+                ForEach(0..<21) { i in
+                    let angle = 135 + Double(i) * (270 / 20)
+                    let isMajor = i % 5 == 0
+                    let inner = radius - lineWidth * (isMajor ? 0.55 : 0.35)
+                    let outer = radius - lineWidth * (isMajor ? 0.75 : 0.55)
+                    let innerRad = angle * .pi / 180
+                    let outerRad = angle * .pi / 180
+
+                    Path { path in
+                        path.move(to: CGPoint(
+                            x: geo.size.width / 2 + cos(innerRad) * inner,
+                            y: geo.size.height / 2 + sin(innerRad) * inner
+                        ))
+                        path.addLine(to: CGPoint(
+                            x: geo.size.width / 2 + cos(outerRad) * outer,
+                            y: geo.size.height / 2 + sin(outerRad) * outer
+                        ))
+                    }
+                    .stroke(Color.white.opacity(isMajor ? 0.25 : 0.10), style: StrokeStyle(lineWidth: isMajor ? 1.5 : 0.8, lineCap: .round))
+                }
+
+                // Needle
+                let needleAngle = 135 + progress * 270
+                NeedleShape(angle: needleAngle, length: radius * 0.85, width: max(4, size * 0.02))
+                    .fill(AppColors.accentCyan)
+                    .shadow(color: AppColors.accentCyan.opacity(0.5), radius: 4, x: 0, y: 0)
+
+                // Needle cap
+                Circle()
+                    .fill(AppColors.background)
+                    .frame(width: max(14, size * 0.07), height: max(14, size * 0.07))
+                    .overlay(Circle().stroke(AppColors.accentCyan, lineWidth: 2))
+
+                // Center text
+                VStack(spacing: 2) {
+                    Text(title)
+                        .font(.system(size: max(8, size * 0.045), weight: .bold))
+                        .foregroundStyle(AppColors.textMuted)
+                        .textCase(.uppercase)
+
+                    Text(formattedValue)
+                        .font(.system(size: max(22, size * 0.17), weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+
+                    Text(subtitle)
+                        .font(.system(size: max(8, size * 0.04), weight: .semibold))
+                        .foregroundStyle(AppColors.accentCyan)
+                        .lineLimit(1)
+                }
+                .offset(y: size * 0.08)
+            }
+        }
+        .aspectRatio(1.25, contentMode: .fit)
+    }
+
+    private var formattedValue: String {
+        if maxValue == 100 {
+            return "\(Int(value))%"
+        } else {
+            return ByteCountFormatter.string(fromByteCount: Int64(value), countStyle: .file)
+        }
+    }
+}
+
+// MARK: - Arc & Needle Shapes
+
+private struct ArcShape: Shape {
+    let startAngle: Double
+    let endAngle: Double
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        let radius = min(rect.width, rect.height) / 2
+        path.addArc(
+            center: center,
+            radius: radius,
+            startAngle: .degrees(startAngle),
+            endAngle: .degrees(endAngle),
+            clockwise: false
+        )
+        return path
+    }
+}
+
+private struct NeedleShape: Shape {
+    let angle: Double
+    let length: CGFloat
+    let width: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        let center = CGPoint(x: rect.midX, y: rect.midY)
+        let rad = angle * .pi / 180
+        let tip = CGPoint(x: center.x + cos(rad) * length, y: center.y + sin(rad) * length)
+        let tailAngle1 = (angle + 180 - 25) * .pi / 180
+        let tailAngle2 = (angle + 180 + 25) * .pi / 180
+        let tailLength = length * 0.18
+        let tail1 = CGPoint(x: center.x + cos(tailAngle1) * tailLength, y: center.y + sin(tailAngle1) * tailLength)
+        let tail2 = CGPoint(x: center.x + cos(tailAngle2) * tailLength, y: center.y + sin(tailAngle2) * tailLength)
+
+        var path = Path()
+        path.move(to: tip)
+        path.addLine(to: tail1)
+        path.addLine(to: tail2)
+        path.closeSubpath()
+        return path
+    }
+}
+
 // MARK: - Helpers
 
 private extension Array where Element == Double {

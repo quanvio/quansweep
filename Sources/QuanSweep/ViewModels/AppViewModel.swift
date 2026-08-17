@@ -16,6 +16,7 @@ final class AppViewModel: ObservableObject {
         didSet { updateDisplayCategories() }
     }
     @Published var expandedCategoryIDs: Set<String> = []
+    @Published var selectedScanItemIDs: Set<UUID> = []
     @Published var lastResult: QuarantineSession?
     @Published var showPermissionAlert = false
     @Published var currentVersion = ""
@@ -111,6 +112,7 @@ final class AppViewModel: ObservableObject {
         statusMessage = "Scanning your Mac..."
         categories = []
         selectedCategoryID = nil
+        selectedScanItemIDs.removeAll()
         scanSearchText = ""
 
         let result = await ScanEngine.scanAll { [weak self] current, total, name in
@@ -146,6 +148,55 @@ final class AppViewModel: ObservableObject {
     func toggleCategorySelection(id: String) {
         guard let index = categories.firstIndex(where: { $0.id == id }) else { return }
         categories[index].isSelected.toggle()
+    }
+
+    // MARK: - Scan Item Selection
+
+    func isScanItemSelected(_ id: UUID) -> Bool {
+        selectedScanItemIDs.contains(id)
+    }
+
+    func toggleScanItemSelection(_ id: UUID) {
+        if selectedScanItemIDs.contains(id) {
+            selectedScanItemIDs.remove(id)
+        } else {
+            selectedScanItemIDs.insert(id)
+        }
+        syncItemSelectionFromIDs()
+    }
+
+    func selectAllVisibleScanItems() {
+        let ids = displayCategories.flatMap { $0.items.filter { !$0.isLocked }.map { $0.id } }
+        selectedScanItemIDs.formUnion(ids)
+        syncItemSelectionFromIDs()
+    }
+
+    func deselectAllScanItems() {
+        selectedScanItemIDs.removeAll()
+        syncItemSelectionFromIDs()
+    }
+
+    func selectAllVisibleItems(in categoryID: String) {
+        guard let index = categories.firstIndex(where: { $0.id == categoryID }) else { return }
+        let ids = categories[index].items.filter { !$0.isLocked }.map { $0.id }
+        selectedScanItemIDs.formUnion(ids)
+        syncItemSelectionFromIDs()
+    }
+
+    func deselectAllVisibleItems(in categoryID: String) {
+        guard let index = categories.firstIndex(where: { $0.id == categoryID }) else { return }
+        let ids = categories[index].items.map { $0.id }
+        selectedScanItemIDs.subtract(ids)
+        syncItemSelectionFromIDs()
+    }
+
+    private func syncItemSelectionFromIDs() {
+        for catIndex in categories.indices {
+            for itemIndex in categories[catIndex].items.indices {
+                categories[catIndex].items[itemIndex].isSelected = selectedScanItemIDs.contains(categories[catIndex].items[itemIndex].id)
+            }
+        }
+        updateDisplayCategories()
     }
 
     // MARK: - Cleanup
@@ -438,7 +489,9 @@ final class AppViewModel: ObservableObject {
         } ?? categories
 
         let search = scanSearchText.trimmingCharacters(in: .whitespaces).lowercased()
-        displayCategories = base.map { category in
+        let sortedBase = sortedCategories(base, by: scanSortOption)
+
+        displayCategories = sortedBase.map { category in
             var copy = category
             if !search.isEmpty {
                 copy.items = copy.items.filter {
@@ -449,6 +502,27 @@ final class AppViewModel: ObservableObject {
             return copy
         }
         .filter { !$0.items.isEmpty }
+    }
+
+    private func sortedCategories(_ categories: [CleanupCategory], by option: ScanSortOption) -> [CleanupCategory] {
+        switch option {
+        case .size:
+            return categories.sorted { $0.totalSize > $1.totalSize }
+        case .name:
+            return categories.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        case .confidence:
+            return categories.sorted {
+                let lhs = $0.items.map { $0.confidence }.max() ?? 0
+                let rhs = $1.items.map { $0.confidence }.max() ?? 0
+                return lhs > rhs
+            }
+        case .date:
+            return categories.sorted {
+                let lhs = $0.items.map { $0.modifiedAt.timeIntervalSince1970 }.max() ?? 0
+                let rhs = $1.items.map { $0.modifiedAt.timeIntervalSince1970 }.max() ?? 0
+                return lhs > rhs
+            }
+        }
     }
 
     private func updateDisplayQuarantineSessions() {
