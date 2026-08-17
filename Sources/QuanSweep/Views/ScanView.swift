@@ -184,11 +184,11 @@ struct ScanView: View {
 
     private func rightPanel(in geo: GeometryProxy) -> some View {
         let rightWidth = geo.size.width - leftPanelWidth(for: geo.size.width)
-        let tableWidth = max(rightWidth - 56, 240)
+        let tableWidth = max(rightWidth - 64, 240)
 
         return VStack(spacing: 0) {
             rightHeader
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 20)
                 .padding(.top, 18)
                 .padding(.bottom, 12)
 
@@ -196,7 +196,7 @@ struct ScanView: View {
                 emptyState
             } else {
                 tableHeader(totalWidth: tableWidth)
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, 20)
 
                 ScrollView {
                     LazyVStack(spacing: 6) {
@@ -210,13 +210,13 @@ struct ScanView: View {
                             )
                         }
                     }
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, 20)
                     .padding(.bottom, 12)
                 }
                 .frame(maxHeight: .infinity)
 
                 bottomBar
-                    .padding(.horizontal, 16)
+                    .padding(.horizontal, 20)
             }
         }
         .frame(maxHeight: .infinity, alignment: .top)

@@ -176,6 +176,7 @@ QuanSweep/
 - [x] V1.2.13 — Rebuild Scan Results right panel like Quarantine/Uninstaller: no inner GeometryReader, consistent 16 pt insets, actions moved to left in bottom bar
 - [x] V1.2.14 — Force Scan Results right panel and table to fill full height from the top, removing the empty gap above the table header
 - [x] V1.2.15 — Flatten Scan Results right panel layout, align HStack to top, eliminate nested VStack that may center content
+- [x] V1.2.16 — Increase Scan Results right panel horizontal padding from 16 pt to 20 pt for cleaner edge gap
 - [ ] V1.3.0 — Signed and notarized release builds
 
 ## Contributing
