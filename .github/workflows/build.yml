@@ -82,8 +82,7 @@ jobs:
       - name: Verify app bundle
         run: |
           echo "Version: ${{ steps.version.outputs.version }}"
-          ls -la QuanSweep.app
-          ls -la QuanSweep.app/Contents/MacOS/QuanSweep
+          find . -maxdepth 1 -type d -name 'QuanSweep*.app' -ls
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
