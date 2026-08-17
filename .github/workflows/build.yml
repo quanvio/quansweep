@@ -75,6 +75,10 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
             -d "{\"state\":\"failure\",\"context\":\"package-log\",\"description\":\"$URL\",\"target_url\":\"$URL\"}"
 
+      - name: Get version
+        id: version
+        run: echo "version=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' scripts/Info.plist)" >> "$GITHUB_OUTPUT"
+
       - name: List artifacts
         run: ls -la QuanSweep-*.zip || true
 
@@ -82,7 +86,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: QuanSweep-app
-          path: ./QuanSweep-*.zip
+          path: QuanSweep-${{ steps.version.outputs.version }}.zip
           if-no-files-found: error
 
   release:
