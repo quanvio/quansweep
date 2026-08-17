@@ -20,7 +20,7 @@ struct UninstallerView: View {
     var body: some View {
         VStack(spacing: 0) {
             header
-                .padding(20)
+                .padding(16)
 
             if viewModel.displayInstalledApps.isEmpty {
                 emptyState
@@ -44,36 +44,37 @@ struct UninstallerView: View {
     }
 
     private var header: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                VStack(alignment: .leading, spacing: 3) {
                     Text("Uninstaller")
-                        .font(.system(size: 22, weight: .bold))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(.white)
                     Text("Remove unwanted apps and reclaim valuable space.")
-                        .font(.system(size: 13))
+                        .font(.system(size: 12))
                         .foregroundStyle(AppColors.textSecondary)
                 }
 
                 Spacer()
 
-                HStack(spacing: 12) {
-                    HStack(spacing: 8) {
+                HStack(spacing: 10) {
+                    HStack(spacing: 6) {
                         Image(systemName: "magnifyingglass")
-                            .font(.caption)
+                            .font(.system(size: 11))
                             .foregroundStyle(AppColors.textMuted)
                         TextField("Search apps...", text: $viewModel.installedAppSearchText)
                             .textFieldStyle(.plain)
                             .foregroundStyle(.white)
+                            .font(.system(size: 12))
                     }
-                    .padding(10)
-                    .frame(width: 240)
+                    .padding(8)
+                    .frame(width: 200)
                     .background(AppColors.cardBackground)
-                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.08), lineWidth: 1))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.cardBorder, lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
 
                     Text("\(viewModel.displayInstalledApps.count) apps installed")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(AppColors.textSecondary)
 
                     Picker("Sort", selection: .constant(AppViewModel.ScanSortOption.name)) {
@@ -82,11 +83,11 @@ struct UninstallerView: View {
                         Text("Name").tag(AppViewModel.ScanSortOption.name)
                     }
                     .pickerStyle(.segmented)
-                    .frame(width: 220)
+                    .frame(width: 200)
                 }
             }
 
-            HStack(spacing: 12) {
+            HStack(spacing: 10) {
                 uninstallerStatCard(
                     icon: "app",
                     color: AppColors.accentCyan,
@@ -123,39 +124,38 @@ struct UninstallerView: View {
     }
 
     private func uninstallerStatCard(icon: String, color: Color, value: String, subtitle: String, label: String) -> some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             Image(systemName: icon)
-                .font(.system(size: 22))
+                .font(.system(size: 18))
                 .foregroundStyle(color)
-                .frame(width: 44, height: 44)
-                .background(color.opacity(0.12))
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .frame(width: 36, height: 36)
+                .background(color.opacity(0.10))
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(value)
-                    .font(.system(size: 16, weight: .bold))
+                    .font(.system(size: 14, weight: .bold))
                     .foregroundStyle(.white)
+                    .lineLimit(1)
                 Text(subtitle)
-                    .font(.caption)
+                    .font(.system(size: 10))
                     .foregroundStyle(AppColors.textSecondary)
                     .lineLimit(1)
                 Text(label)
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(AppColors.textMuted)
-                    .textCase(.uppercase)
+                    .captionLabel()
             }
 
             Spacer()
         }
-        .padding(12)
+        .padding(10)
         .frame(maxWidth: .infinity)
-        .neonCard(color: color.opacity(0.4))
+        .glassCard()
     }
 
     private var emptyState: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             Image(systemName: "app.gift")
-                .font(.system(size: 56))
+                .font(.system(size: 48))
                 .foregroundStyle(AppColors.accentPurple)
 
             Text("No apps found")
@@ -166,6 +166,7 @@ struct UninstallerView: View {
                 .foregroundStyle(AppColors.textSecondary)
                 .multilineTextAlignment(.center)
                 .frame(maxWidth: 420)
+                .font(.system(size: 12))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -185,8 +186,8 @@ struct UninstallerView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
+                .padding(.horizontal, 12)
+                .padding(.bottom, 12)
             }
 
             bottomBar
@@ -194,7 +195,7 @@ struct UninstallerView: View {
     }
 
     private var tableHeader: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             Toggle("", isOn: Binding(
                 get: { viewModel.displayInstalledApps.allSatisfy { viewModel.selectedInstalledAppIDs.contains($0.id) } && !viewModel.displayInstalledApps.isEmpty },
                 set: { isOn in
@@ -206,43 +207,41 @@ struct UninstallerView: View {
                 }
             ))
             .toggleStyle(.checkbox)
-            .frame(width: 24)
+            .frame(width: 22)
 
             Text("App Name")
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(AppColors.textSecondary)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(AppColors.textMuted)
                 .textCase(.uppercase)
-                .frame(minWidth: 200, alignment: .leading)
-
-            Spacer()
+                .frame(width: 220, alignment: .leading)
 
             Text("Size")
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(AppColors.textSecondary)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(AppColors.textMuted)
                 .textCase(.uppercase)
-                .frame(width: 90, alignment: .trailing)
+                .frame(width: 80, alignment: .trailing)
 
             Text("Last Used")
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(AppColors.textSecondary)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(AppColors.textMuted)
                 .textCase(.uppercase)
-                .frame(width: 120, alignment: .leading)
+                .frame(width: 100, alignment: .leading)
 
             Text("Actions")
-                .font(.system(size: 11, weight: .bold))
-                .foregroundStyle(AppColors.textSecondary)
+                .font(.system(size: 9, weight: .bold))
+                .foregroundStyle(AppColors.textMuted)
                 .textCase(.uppercase)
-                .frame(width: 120, alignment: .trailing)
+                .frame(width: 110, alignment: .trailing)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(Color.white.opacity(0.04))
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .background(Color.white.opacity(0.03))
     }
 
     private var bottomBar: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 14) {
             Text("\(viewModel.selectedInstalledAppIDs.count) Selected · \(ByteCountFormatter.string(fromByteCount: Int64(viewModel.selectedInstalledAppsSize), countStyle: .file))")
-                .font(.system(size: 14, weight: .semibold))
+                .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.white)
 
             Spacer()
@@ -252,41 +251,41 @@ struct UninstallerView: View {
             } label: {
                 Text("Select All")
             }
-            .buttonStyle(NeonButtonStyle(color: AppColors.accentBlue, isProminent: false))
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentBlue, isProminent: false))
 
             Button {
                 viewModel.deselectAllInstalledApps()
             } label: {
                 Text("Deselect All")
             }
-            .buttonStyle(NeonButtonStyle(color: AppColors.accentBlue, isProminent: false))
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentBlue, isProminent: false))
 
             Button {
                 showUninstallConfirmation = true
             } label: {
                 Label("Uninstall Selected", systemImage: "trash")
             }
-            .buttonStyle(NeonButtonStyle(color: AppColors.accentRed))
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentRed))
             .disabled(viewModel.selectedInstalledAppIDs.isEmpty)
         }
-        .padding(16)
+        .padding(12)
         .background(AppColors.cardBackground)
         .overlay(
             Rectangle()
-                .fill(LinearGradient(colors: [AppColors.accentPurple.opacity(0.1), AppColors.accentCyan.opacity(0.1)], startPoint: .leading, endPoint: .trailing))
+                .fill(AppColors.divider)
                 .frame(height: 1),
             alignment: .top
         )
     }
 }
 
-private func appIconView(for path: String, size: CGFloat = 36) -> some View {
+private func appIconView(for path: String, size: CGFloat = 32) -> some View {
     let icon = NSWorkspace.shared.icon(forFile: path)
     return Image(nsImage: icon)
         .resizable()
         .aspectRatio(contentMode: .fit)
         .frame(width: size, height: size)
-        .clipShape(RoundedRectangle(cornerRadius: size > 40 ? 14 : 8, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: size > 40 ? 12 : 7, style: .continuous))
 }
 
 struct AppRow: View {
@@ -309,61 +308,59 @@ struct AppRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             Toggle("", isOn: isSelected)
                 .toggleStyle(.checkbox)
-                .frame(width: 24)
+                .frame(width: 22)
 
             HStack(spacing: 10) {
                 appIconView(for: app.path)
 
                 Text(app.name)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.white)
                     .lineLimit(1)
             }
-            .frame(minWidth: 200, alignment: .leading)
+            .frame(width: 220, alignment: .leading)
             .contentShape(Rectangle())
             .onTapGesture {
                 onSelect()
             }
 
-            Spacer()
-
             Text(app.formattedSize)
-                .font(.caption.monospacedDigit())
+                .font(.system(size: 11).monospacedDigit())
                 .foregroundStyle(AppColors.textSecondary)
-                .frame(width: 90, alignment: .trailing)
+                .frame(width: 80, alignment: .trailing)
 
             Text(app.formattedLastUsed)
-                .font(.caption)
+                .font(.system(size: 11))
                 .foregroundStyle(AppColors.textMuted)
-                .frame(width: 120, alignment: .leading)
+                .frame(width: 100, alignment: .leading)
 
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 Button {
                     onUninstall()
                 } label: {
                     Label("Uninstall", systemImage: "trash")
+                        .font(.system(size: 11))
                 }
-                .buttonStyle(NeonButtonStyle(color: AppColors.accentRed, isProminent: false))
-                .controlSize(.small)
+                .buttonStyle(GlassButtonStyle(color: AppColors.accentRed, isProminent: false))
 
                 Button {
                     onSelect()
                 } label: {
                     Image(systemName: "info.circle")
+                        .font(.system(size: 12))
                 }
-                .buttonStyle(NeonButtonStyle(color: AppColors.accentBlue, isProminent: false))
-                .controlSize(.small)
+                .buttonStyle(GlassButtonStyle(color: AppColors.accentBlue, isProminent: false))
                 .help("View related files")
             }
-            .frame(width: 120, alignment: .trailing)
+            .frame(width: 110, alignment: .trailing)
         }
-        .padding(10)
+        .padding(8)
         .background(AppColors.cardBackground)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.06), lineWidth: 1))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(white: 1.0, opacity: 0.05), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 }
 
@@ -374,7 +371,7 @@ struct AppDetailSheet: View {
     @State private var residuePaths: [String] = []
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 16) {
             header
 
             infoSection
@@ -385,8 +382,8 @@ struct AppDetailSheet: View {
 
             actionButtons
         }
-        .padding(24)
-        .frame(width: 520, height: 600)
+        .padding(20)
+        .frame(width: 480, height: 540)
         .background(AppColors.background)
         .task {
             residuePaths = InstalledApps.relatedResiduePaths(for: app)
@@ -394,17 +391,17 @@ struct AppDetailSheet: View {
     }
 
     private var header: some View {
-        HStack(spacing: 16) {
-            appIconView(for: app.path, size: 72)
+        HStack(spacing: 14) {
+            appIconView(for: app.path, size: 56)
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(app.name)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .lineLimit(2)
                     .foregroundStyle(.white)
 
                 Text(app.formattedSize)
-                    .font(.system(size: 16, weight: .medium))
+                    .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(AppColors.textSecondary)
             }
 
@@ -414,7 +411,7 @@ struct AppDetailSheet: View {
                 dismiss()
             } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 22))
+                    .font(.system(size: 20))
                     .foregroundStyle(AppColors.textMuted)
             }
             .buttonStyle(.plain)
@@ -423,7 +420,7 @@ struct AppDetailSheet: View {
     }
 
     private var infoSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             DetailRow(label: "Path", value: app.path)
             if !app.version.isEmpty {
                 DetailRow(label: "Version", value: app.version)
@@ -433,29 +430,29 @@ struct AppDetailSheet: View {
             }
             DetailRow(label: "Last Used", value: app.formattedLastUsed)
         }
-        .padding(16)
-        .neonCard(color: AppColors.accentBlue.opacity(0.4))
+        .padding(14)
+        .glassCard()
     }
 
     private var residueSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text("Related files to remove")
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.white)
                 Spacer()
                 Text("\(residuePaths.count) found")
-                    .font(.caption)
+                    .font(.system(size: 10))
                     .foregroundStyle(AppColors.textSecondary)
             }
 
             if residuePaths.isEmpty {
                 Text("No related files found under ~/Library.")
-                    .font(.system(size: 13))
+                    .font(.system(size: 12))
                     .foregroundStyle(AppColors.textSecondary)
             } else {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 6) {
+                    VStack(alignment: .leading, spacing: 5) {
                         ForEach(residuePaths, id: \.self) { path in
                             HStack {
                                 Text(path)
@@ -467,16 +464,16 @@ struct AppDetailSheet: View {
                         }
                     }
                 }
-                .frame(maxHeight: 180)
+                .frame(maxHeight: 160)
             }
 
             Text("Only paths under ~/Library that match this app are shown. System folders and user documents are never touched.")
-                .font(.system(size: 11))
+                .font(.system(size: 10))
                 .foregroundStyle(AppColors.textMuted)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .padding(16)
-        .neonCard(color: AppColors.accentPurple.opacity(0.4))
+        .padding(14)
+        .glassCard()
     }
 
     private var actionButtons: some View {
@@ -487,7 +484,7 @@ struct AppDetailSheet: View {
                 Label("Show in Finder", systemImage: "folder")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(NeonButtonStyle(color: AppColors.accentBlue, isProminent: false))
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentBlue, isProminent: false))
 
             Button {
                 Task {
@@ -498,9 +495,7 @@ struct AppDetailSheet: View {
                 Label("Uninstall + Quarantine", systemImage: "trash")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(NeonButtonStyle(color: AppColors.accentRed))
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentRed))
         }
-        .controlSize(.large)
     }
 }
-

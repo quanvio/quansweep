@@ -25,7 +25,7 @@ Built with native Swift + SwiftUI. No Electron, no background daemon, no network
 
 ## Highlights
 
-- **Dark Neon Dashboard** — live system overview with animated gauges, real-time rings for CPU, memory, storage, temperature, fan, and network.
+- **Glassmorphism Dashboard** — live system overview with animated gauges, real-time rings for CPU, memory, storage, temperature, fan, and network.
 - **Live System Monitor** — native Mach-based CPU and memory readings, plus real CPU temperature via SMC/HID thermal sensors.
 - **Orbital Scan Animation** — visual feedback while scanning with category progress arcs.
 - **App Residue Scanner** — find leftover files from apps you already uninstalled.
@@ -161,6 +161,7 @@ QuanSweep/
 - [x] V0.6 — Large files + duplicate finder
 - [x] V0.7 — AI model analyzer (GGUF, MLX, HuggingFace, Ollama)
 - [x] V1.2.0 — Dark neon dashboard redesign, live system monitoring, real thermal readings, animated scanning overlay
+- [x] V1.2.1 — Glassmorphism UI overhaul, responsive layout fixes, aligned tables and action buttons
 - [ ] V1.3.0 — Signed and notarized release builds
 
 ## Contributing

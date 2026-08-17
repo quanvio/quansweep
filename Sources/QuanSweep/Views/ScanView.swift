@@ -11,11 +11,11 @@ struct ScanView: View {
             } else {
                 HStack(spacing: 0) {
                     leftPanel
-                        .frame(width: 380)
+                        .frame(width: 340)
                         .padding(.trailing, 16)
 
                     Divider()
-                        .background(Color.white.opacity(0.08))
+                        .background(AppColors.divider)
 
                     rightPanel
                 }
@@ -31,7 +31,7 @@ struct ScanView: View {
     private var emptyState: some View {
         VStack(spacing: 16) {
             Image(systemName: "magnifyingglass.circle")
-                .font(.system(size: 56))
+                .font(.system(size: 48))
                 .foregroundStyle(AppColors.accentCyan)
 
             Text("No scan yet")
@@ -41,11 +41,12 @@ struct ScanView: View {
             Text("Start a scan to see what QuanSweep can safely clean.\nNothing is deleted permanently — items are moved to Quarantine first.")
                 .foregroundStyle(AppColors.textSecondary)
                 .multilineTextAlignment(.center)
+                .font(.system(size: 12))
 
             Button("Start Scan") {
                 Task { await viewModel.scan() }
             }
-            .buttonStyle(NeonButtonStyle(color: AppColors.accentCyan))
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentCyan))
             .padding(.top, 8)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -53,13 +54,13 @@ struct ScanView: View {
 
     private var leftPanel: some View {
         ScrollView {
-            VStack(spacing: 20) {
-                VStack(alignment: .leading, spacing: 4) {
+            VStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 3) {
                     Text("Scan Results")
-                        .font(.system(size: 22, weight: .bold))
+                        .font(.system(size: 18, weight: .bold))
                         .foregroundStyle(.white)
                     Text("Smart Scan Completed")
-                        .font(.system(size: 13))
+                        .font(.system(size: 12))
                         .foregroundStyle(AppColors.textSecondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -71,19 +72,16 @@ struct ScanView: View {
                     subtitle: "\(viewModel.summary.itemCount) Items Scanned",
                     colors: [AppColors.accentCyan, AppColors.accentBlue, AppColors.accentPurple, AppColors.accentOrange]
                 )
-                .frame(height: 220)
+                .frame(height: 180)
 
-                HStack(spacing: 8) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                     summaryPill(label: "Safe", value: viewModel.summary.safeToClean, color: AppColors.accentGreen)
                     summaryPill(label: "Review", value: viewModel.summary.reviewRequired, color: AppColors.accentOrange)
-                }
-
-                HStack(spacing: 8) {
                     summaryPill(label: "Advanced", value: viewModel.summary.reviewRequired, color: AppColors.accentRed)
                     summaryPill(label: "Protected", value: viewModel.summary.protectedSize, color: AppColors.accentBlue)
                 }
 
-                HStack(spacing: 12) {
+                HStack(spacing: 8) {
                     StatCard(
                         title: "Reclaimable",
                         value: ByteCountFormatter.string(fromByteCount: Int64(viewModel.summary.safeToClean + viewModel.summary.reviewRequired), countStyle: .file),
@@ -101,7 +99,7 @@ struct ScanView: View {
                     )
                 }
 
-                HStack(spacing: 12) {
+                HStack(spacing: 8) {
                     StatCard(
                         title: "Needs Review",
                         value: ByteCountFormatter.string(fromByteCount: Int64(viewModel.summary.reviewRequired), countStyle: .file),
@@ -119,76 +117,69 @@ struct ScanView: View {
                     )
                 }
 
-                HStack(spacing: 12) {
-                    VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 8) {
+                    VStack(alignment: .leading, spacing: 3) {
                         Text("Last Scan")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(AppColors.textSecondary)
-                            .textCase(.uppercase)
+                            .captionLabel()
                         Text(viewModel.lastResult?.createdAt ?? Date(), style: .relative)
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(AppColors.accentCyan)
                         Text(viewModel.lastResult?.createdAt ?? Date(), style: .time)
-                            .font(.caption)
+                            .font(.system(size: 10))
                             .foregroundStyle(AppColors.textMuted)
                     }
-                    .padding(14)
+                    .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .neonCard(color: AppColors.accentCyan.opacity(0.5))
+                    .glassCard()
 
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 3) {
                         Text("Scan Type")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundStyle(AppColors.textSecondary)
-                            .textCase(.uppercase)
+                            .captionLabel()
                         Text("Smart Scan")
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.system(size: 14, weight: .bold))
                             .foregroundStyle(AppColors.accentPurple)
                         Text("Deep analysis enabled")
-                            .font(.caption)
+                            .font(.system(size: 10))
                             .foregroundStyle(AppColors.textMuted)
                     }
-                    .padding(14)
+                    .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .neonCard(color: AppColors.accentPurple.opacity(0.5))
+                    .glassCard()
                 }
 
                 Spacer(minLength: 20)
             }
-            .padding(20)
+            .padding(16)
         }
         .background(AppColors.background)
     }
 
     private func summaryPill(label: String, value: UInt64, color: Color) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 6) {
             Circle()
                 .fill(color)
-                .frame(width: 8, height: 8)
-                .glowText(color: color)
+                .frame(width: 6, height: 6)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(label)
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(AppColors.textSecondary)
-                    .textCase(.uppercase)
+                    .captionLabel()
                 Text(ByteCountFormatter.string(fromByteCount: Int64(value), countStyle: .file))
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.white)
             }
 
             Spacer()
         }
-        .padding(10)
-        .background(color.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(color.opacity(0.25), lineWidth: 1))
+        .padding(8)
+        .background(color.opacity(0.06))
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).stroke(color.opacity(0.18), lineWidth: 1))
     }
 
     private var rightPanel: some View {
         VStack(spacing: 0) {
             rightHeader
-                .padding(16)
+                .padding(14)
 
             ScrollView {
                 LazyVStack(spacing: 8, pinnedViews: []) {
@@ -196,8 +187,8 @@ struct ScanView: View {
                         expandableCategorySection(category: $category)
                     }
                 }
-                .padding(.horizontal, 16)
-                .padding(.bottom, 16)
+                .padding(.horizontal, 14)
+                .padding(.bottom, 14)
             }
 
             bottomBar
@@ -207,19 +198,20 @@ struct ScanView: View {
 
     private var rightHeader: some View {
         HStack(spacing: 12) {
-            HStack(spacing: 8) {
+            HStack(spacing: 6) {
                 Image(systemName: "magnifyingglass")
-                    .font(.caption)
+                    .font(.system(size: 11))
                     .foregroundStyle(AppColors.textMuted)
                 TextField("Search items...", text: $viewModel.scanSearchText)
                     .textFieldStyle(.plain)
                     .foregroundStyle(.white)
+                    .font(.system(size: 12))
             }
-            .padding(10)
+            .padding(8)
             .background(AppColors.cardBackground)
-            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color.white.opacity(0.08), lineWidth: 1))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
-            .frame(width: 240)
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.cardBorder, lineWidth: 1))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .frame(width: 200)
 
             Picker("Sort", selection: $viewModel.scanSortOption) {
                 ForEach(AppViewModel.ScanSortOption.allCases) { option in
@@ -227,7 +219,7 @@ struct ScanView: View {
                 }
             }
             .pickerStyle(.segmented)
-            .frame(width: 320)
+            .frame(width: 280)
 
             Spacer()
 
@@ -236,7 +228,7 @@ struct ScanView: View {
             } label: {
                 Label("New Scan", systemImage: "arrow.clockwise")
             }
-            .buttonStyle(NeonButtonStyle(color: AppColors.accentCyan, isProminent: false))
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentCyan, isProminent: false))
         }
     }
 
@@ -248,56 +240,56 @@ struct ScanView: View {
             Button {
                 toggleExpanded(cat.id)
             } label: {
-                HStack(spacing: 12) {
+                HStack(spacing: 10) {
                     Image(systemName: cat.icon)
-                        .font(.system(size: 18))
+                        .font(.system(size: 16))
                         .foregroundStyle(categoryColor(cat))
-                        .frame(width: 36, height: 36)
-                        .background(categoryColor(cat).opacity(0.12))
-                        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .frame(width: 32, height: 32)
+                        .background(categoryColor(cat).opacity(0.10))
+                        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
 
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: 1) {
                         Text(cat.name)
-                            .font(.system(size: 13, weight: .bold))
+                            .font(.system(size: 12, weight: .bold))
                             .foregroundStyle(.white)
                         Text(cat.description)
-                            .font(.caption)
+                            .font(.system(size: 10))
                             .foregroundStyle(AppColors.textSecondary)
                             .lineLimit(1)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                    Spacer()
+                    HStack(spacing: 12) {
+                        Text(ByteCountFormatter.string(fromByteCount: Int64(cat.totalSize), countStyle: .file))
+                            .font(.system(size: 11).monospacedDigit())
+                            .foregroundStyle(AppColors.textSecondary)
 
-                    Text(ByteCountFormatter.string(fromByteCount: Int64(cat.totalSize), countStyle: .file))
-                        .font(.caption.monospacedDigit())
-                        .foregroundStyle(AppColors.textSecondary)
+                        Text("\(cat.items.count) items")
+                            .font(.system(size: 10))
+                            .foregroundStyle(AppColors.textMuted)
 
-                    Text("\(cat.items.count) items")
-                        .font(.caption2)
-                        .foregroundStyle(AppColors.textMuted)
-
-                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.caption)
-                        .foregroundStyle(AppColors.textMuted)
-                        .rotationEffect(.degrees(isExpanded ? 180 : 0))
+                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 10))
+                            .foregroundStyle(AppColors.textMuted)
+                    }
                 }
-                .padding(12)
+                .padding(10)
                 .background(AppColors.cardBackground)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(categoryColor(cat).opacity(0.25), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .stroke(categoryColor(cat).opacity(0.18), lineWidth: 1)
                 )
-                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
             .buttonStyle(.plain)
 
             if isExpanded {
-                VStack(spacing: 4) {
+                VStack(spacing: 3) {
                     ForEach(category.items) { $item in
                         ItemRow(item: $item, selectedItem: $selectedItem)
                     }
                 }
-                .padding(.top, 6)
+                .padding(.top, 4)
             }
         }
     }
@@ -321,12 +313,12 @@ struct ScanView: View {
 
     private var bottomBar: some View {
         HStack {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text("Selected: \(ByteCountFormatter.string(fromByteCount: Int64(viewModel.totalSelectedSize), countStyle: .file))")
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.white)
                 Text(viewModel.statusMessage)
-                    .font(.caption)
+                    .font(.system(size: 10))
                     .foregroundStyle(AppColors.textSecondary)
             }
 
@@ -335,19 +327,19 @@ struct ScanView: View {
             Button(action: {
                 Task { await viewModel.cleanSelected() }
             }) {
-                HStack(spacing: 6) {
+                HStack(spacing: 5) {
                     Image(systemName: "shield")
                     Text("Move to Quarantine")
                 }
             }
-            .buttonStyle(NeonButtonStyle(color: AppColors.accentCyan))
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentCyan))
             .disabled(viewModel.totalSelectedSize == 0 || viewModel.isScanning)
         }
-        .padding(16)
+        .padding(14)
         .background(AppColors.cardBackground)
         .overlay(
             Rectangle()
-                .fill(LinearGradient(colors: [AppColors.accentCyan.opacity(0.1), AppColors.accentPurple.opacity(0.1)], startPoint: .leading, endPoint: .trailing))
+                .fill(AppColors.divider)
                 .frame(height: 1),
             alignment: .top
         )
@@ -359,28 +351,29 @@ struct ItemRow: View {
     @Binding var selectedItem: CleanupItem?
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             Toggle("", isOn: selectedBinding)
                 .toggleStyle(.checkbox)
                 .disabled(item.isLocked)
+                .frame(width: 22)
 
             Image(systemName: iconForCategory)
-                .font(.system(size: 16))
+                .font(.system(size: 14))
                 .foregroundStyle(safetyColor)
-                .frame(width: 32, height: 32)
-                .background(safetyColor.opacity(0.12))
+                .frame(width: 28, height: 28)
+                .background(safetyColor.opacity(0.10))
                 .clipShape(Circle())
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(item.name)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(.white)
                     .lineLimit(1)
 
-                HStack(spacing: 6) {
+                HStack(spacing: 5) {
                     SafetyBadge(safety: item.safety)
                     Text(item.reason)
-                        .font(.caption)
+                        .font(.system(size: 10))
                         .foregroundStyle(AppColors.textSecondary)
                         .lineLimit(1)
                 }
@@ -389,8 +382,9 @@ struct ItemRow: View {
             Spacer()
 
             Text(item.formattedSize)
-                .font(.caption.monospacedDigit())
+                .font(.system(size: 11).monospacedDigit())
                 .foregroundStyle(AppColors.textSecondary)
+                .frame(width: 70, alignment: .trailing)
 
             Button {
                 selectedItem = item
@@ -400,11 +394,12 @@ struct ItemRow: View {
             }
             .buttonStyle(.plain)
             .help("Inspect this item")
+            .frame(width: 24)
         }
-        .padding(10)
-        .background(item.isLocked ? Color.white.opacity(0.03) : AppColors.cardBackground)
-        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(white: 1.0, opacity: 0.06), lineWidth: 1))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding(8)
+        .background(item.isLocked ? Color.white.opacity(0.02) : AppColors.cardBackground)
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(white: 1.0, opacity: 0.05), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
         .opacity(item.isLocked ? 0.6 : 1.0)
     }
 

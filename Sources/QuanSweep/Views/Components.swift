@@ -1,12 +1,14 @@
 import SwiftUI
 
+// MARK: - Gauge
+
 struct GaugeView: View {
     let value: Double
     let maxValue: Double
     let title: String
     let subtitle: String
     var colors: [Color] = [AppColors.accentCyan, AppColors.accentBlue, AppColors.accentPurple]
-    var lineWidth: CGFloat = 18
+    var lineWidth: CGFloat = 16
 
     private var progress: Double {
         maxValue > 0 ? min(max(value / maxValue, 0), 1) : 0
@@ -15,30 +17,33 @@ struct GaugeView: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color.white.opacity(0.08), lineWidth: lineWidth)
+                .stroke(Color.white.opacity(0.06), lineWidth: lineWidth)
 
             Circle()
                 .trim(from: 0, to: progress)
                 .stroke(
-                    AngularGradient(colors: colors, center: .center, startAngle: .degrees(0), endAngle: .degrees(360)),
+                    AngularGradient(
+                        colors: colors,
+                        center: .center,
+                        startAngle: .degrees(0),
+                        endAngle: .degrees(360)
+                    ),
                     style: StrokeStyle(lineWidth: lineWidth, lineCap: .round)
                 )
                 .rotationEffect(.degrees(-90))
-                .shadow(color: colors.first?.opacity(0.5) ?? .clear, radius: 12, x: 0, y: 0)
 
             VStack(spacing: 4) {
                 Text(title)
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(AppColors.textSecondary)
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(AppColors.textMuted)
                     .textCase(.uppercase)
 
                 Text(formattedValue)
-                    .font(.system(size: 48, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
-                    .glowText(color: colors.first ?? AppColors.accentCyan)
+                    .font(.system(size: 42, weight: .bold, design: .rounded))
+                    .foregroundStyle(AppColors.textPrimary)
 
                 Text(subtitle)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(colors.first ?? AppColors.accentCyan)
             }
         }
@@ -54,6 +59,8 @@ struct GaugeView: View {
     }
 }
 
+// MARK: - Stat Card
+
 struct StatCard: View {
     let title: String
     let value: String
@@ -62,28 +69,25 @@ struct StatCard: View {
     var history: [Double] = []
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.system(size: 10, weight: .bold))
-                .foregroundStyle(AppColors.textSecondary)
-                .textCase(.uppercase)
+                .captionLabel()
 
             Text(value)
-                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .font(.system(size: 22, weight: .bold, design: .rounded))
                 .foregroundStyle(color)
-                .glowText(color: color)
 
             Text(subtitle)
                 .font(.caption)
                 .foregroundStyle(AppColors.textMuted)
 
             sparkline
-                .frame(height: 28)
-                .padding(.top, 4)
+                .frame(height: 24)
+                .padding(.top, 2)
         }
-        .padding(16)
+        .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .neonCard(color: color.opacity(0.6))
+        .glassCard()
     }
 
     private var sparkline: some View {
@@ -102,7 +106,7 @@ struct StatCard: View {
                         }
                     }
                 }
-                .stroke(color.opacity(0.7), style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+                .stroke(color.opacity(0.6), style: StrokeStyle(lineWidth: 1.5, lineCap: .round, lineJoin: .round))
                 .overlay(
                     Path { path in
                         let stepX = geo.size.width / CGFloat(points.count - 1)
@@ -114,15 +118,17 @@ struct StatCard: View {
                         }
                         path.addLine(to: CGPoint(x: geo.size.width, y: geo.size.height))
                     }
-                    .fill(color.opacity(0.12))
+                    .fill(color.opacity(0.08))
                 )
             } else {
                 RoundedRectangle(cornerRadius: 4)
-                    .fill(color.opacity(0.1))
+                    .fill(color.opacity(0.06))
             }
         }
     }
 }
+
+// MARK: - System Ring
 
 struct RingView: View {
     let progress: Double
@@ -132,38 +138,39 @@ struct RingView: View {
     let subtitle: String
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 6) {
             ZStack {
                 Circle()
-                    .stroke(Color.white.opacity(0.08), lineWidth: 4)
+                    .stroke(Color.white.opacity(0.06), lineWidth: 3)
                 Circle()
                     .trim(from: 0, to: min(max(progress, 0), 1))
-                    .stroke(color, style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                    .stroke(color, style: StrokeStyle(lineWidth: 3, lineCap: .round))
                     .rotationEffect(.degrees(-90))
-                    .shadow(color: color.opacity(0.6), radius: 6, x: 0, y: 0)
 
                 Image(systemName: icon)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(color)
             }
-            .frame(width: 44, height: 44)
+            .frame(width: 40, height: 40)
 
-            VStack(spacing: 2) {
+            VStack(spacing: 1) {
                 Text(title)
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.system(size: 9, weight: .bold))
                     .foregroundStyle(AppColors.textPrimary)
                     .textCase(.uppercase)
                 Text(subtitle)
-                    .font(.system(size: 9, weight: .medium))
+                    .font(.system(size: 8, weight: .medium))
                     .foregroundStyle(AppColors.textSecondary)
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
-                    .frame(maxWidth: 70)
+                    .frame(maxWidth: 60)
             }
         }
         .frame(maxWidth: .infinity)
     }
 }
+
+// MARK: - Safety Badge
 
 struct SafetyBadge: View {
     let safety: SafetyLevel
@@ -171,12 +178,12 @@ struct SafetyBadge: View {
     var body: some View {
         Text(safety.rawValue.uppercased())
             .font(.system(size: 9, weight: .bold))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(color.opacity(0.15))
+            .padding(.horizontal, 7)
+            .padding(.vertical, 2)
+            .background(color.opacity(0.12))
             .foregroundStyle(color)
             .clipShape(Capsule())
-            .overlay(Capsule().stroke(color.opacity(0.45), lineWidth: 1))
+            .overlay(Capsule().stroke(color.opacity(0.30), lineWidth: 1))
     }
 
     private var color: Color {
@@ -189,14 +196,7 @@ struct SafetyBadge: View {
     }
 }
 
-private extension Array where Element == Double {
-    func normalized() -> [Double] {
-        guard let min = self.min(), let max = self.max(), max > min else {
-            return map { _ in 0.5 }
-        }
-        return map { ($0 - min) / (max - min) }
-    }
-}
+// MARK: - Detail Row
 
 struct DetailRow: View {
     let label: String
@@ -216,5 +216,16 @@ struct DetailRow: View {
 
             Spacer()
         }
+    }
+}
+
+// MARK: - Helpers
+
+private extension Array where Element == Double {
+    func normalized() -> [Double] {
+        guard let min = self.min(), let max = self.max(), max > min else {
+            return map { _ in 0.5 }
+        }
+        return map { ($0 - min) / (max - min) }
     }
 }

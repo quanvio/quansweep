@@ -11,22 +11,22 @@ struct ScanningOverlayView: View {
 
     private var categoryIcons: [String] {
         viewModel.categories.map { $0.icon }.isEmpty
-            ? ["app.dashed", "externaldrive.badge.icloud", "folder.badge.gear", "doc.text", "trash", "hammer", "terminal", "arrow.down.circle", "doc.badge.arrow.up", "brain"]
+            ? ["app.dashed", "externaldrive.badge.icloud", "folder.badge.gear", "doc.text", "trash", "hammer", "terminal", "arrow.down.circle"]
             : viewModel.categories.map { $0.icon }
     }
 
     var body: some View {
         ZStack {
             AppColors.background
-                .opacity(0.96)
+                .opacity(0.95)
                 .ignoresSafeArea()
 
-            VStack(spacing: 28) {
+            VStack(spacing: 24) {
                 Spacer()
 
                 ZStack {
-                    orbitalRing(radius: 160, icons: Array(categoryIcons.prefix(4)), rotation: outerRotation)
-                    orbitalRing(radius: 120, icons: Array(categoryIcons.suffix(4)), rotation: innerRotation, clockwise: false)
+                    orbitalRing(radius: 150, icons: Array(categoryIcons.prefix(4)), rotation: outerRotation)
+                    orbitalRing(radius: 110, icons: Array(categoryIcons.suffix(4)), rotation: innerRotation, clockwise: false)
 
                     GaugeView(
                         value: Double(progressPercent),
@@ -34,23 +34,22 @@ struct ScanningOverlayView: View {
                         title: "Scanning",
                         subtitle: viewModel.statusMessage,
                         colors: [AppColors.accentCyan, AppColors.accentBlue, AppColors.accentPurple],
-                        lineWidth: 14
+                        lineWidth: 12
                     )
-                    .frame(width: 200, height: 200)
+                    .frame(width: 180, height: 180)
                 }
-                .frame(width: 360, height: 360)
+                .frame(width: 340, height: 340)
 
-                VStack(spacing: 8) {
+                VStack(spacing: 6) {
                     Text("\(progressPercent)%")
-                        .font(.system(size: 48, weight: .bold, design: .rounded))
+                        .font(.system(size: 42, weight: .bold, design: .rounded))
                         .foregroundStyle(.white)
-                        .glowText(color: AppColors.accentCyan)
 
                     Text(viewModel.statusMessage)
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(AppColors.textSecondary)
                         .multilineTextAlignment(.center)
-                        .frame(maxWidth: 400)
+                        .frame(maxWidth: 360)
                 }
 
                 Spacer()
@@ -59,17 +58,17 @@ struct ScanningOverlayView: View {
                     // Scan is not cancellable in current engine; button provides feedback.
                 } label: {
                     Text("Cancel Scan")
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                 }
-                .buttonStyle(NeonButtonStyle(color: AppColors.accentRed, isProminent: false))
-                .padding(.bottom, 32)
+                .buttonStyle(GlassButtonStyle(color: AppColors.accentRed, isProminent: false))
+                .padding(.bottom, 28)
             }
         }
         .onAppear {
-            withAnimation(.linear(duration: 20).repeatForever(autoreverses: false)) {
+            withAnimation(.linear(duration: 24).repeatForever(autoreverses: false)) {
                 outerRotation = 360
             }
-            withAnimation(.linear(duration: 14).repeatForever(autoreverses: false)) {
+            withAnimation(.linear(duration: 18).repeatForever(autoreverses: false)) {
                 innerRotation = -360
             }
         }
@@ -80,10 +79,10 @@ struct ScanningOverlayView: View {
             Circle()
                 .stroke(
                     AngularGradient(
-                        colors: [AppColors.accentCyan.opacity(0.3), AppColors.accentPurple.opacity(0.3), AppColors.accentBlue.opacity(0.3), AppColors.accentCyan.opacity(0.3)],
+                        colors: [AppColors.accentCyan.opacity(0.2), AppColors.accentPurple.opacity(0.2), AppColors.accentBlue.opacity(0.2), AppColors.accentCyan.opacity(0.2)],
                         center: .center
                     ),
-                    style: StrokeStyle(lineWidth: 1.5, dash: [6, 6])
+                    style: StrokeStyle(lineWidth: 1, dash: [6, 6])
                 )
                 .frame(width: radius * 2, height: radius * 2)
                 .rotationEffect(.degrees(rotation * (clockwise ? 1 : -1)))
@@ -101,13 +100,12 @@ struct ScanningOverlayView: View {
         let y = radius * sin(rad)
 
         return Image(systemName: icon)
-            .font(.system(size: 14, weight: .semibold))
+            .font(.system(size: 12, weight: .semibold))
             .foregroundStyle(AppColors.accentCyan)
-            .frame(width: 36, height: 36)
+            .frame(width: 32, height: 32)
             .background(AppColors.cardBackground)
-            .overlay(Circle().stroke(AppColors.accentCyan.opacity(0.4), lineWidth: 1))
+            .overlay(Circle().stroke(AppColors.accentCyan.opacity(0.25), lineWidth: 1))
             .clipShape(Circle())
             .offset(x: x, y: y)
-            .shadow(color: AppColors.accentCyan.opacity(0.25), radius: 8, x: 0, y: 0)
     }
 }

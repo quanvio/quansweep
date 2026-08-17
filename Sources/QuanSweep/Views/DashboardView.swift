@@ -25,10 +25,10 @@ struct DashboardView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 20) {
+            VStack(spacing: 16) {
                 topBar
 
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     StatCard(
                         title: "Reclaimable",
                         value: ByteCountFormatter.string(fromByteCount: Int64(reclaimable), countStyle: .file),
@@ -36,9 +36,6 @@ struct DashboardView: View {
                         color: AppColors.accentBlue,
                         history: viewModel.categories.map { Double($0.totalSize) }.sorted()
                     )
-                    .offset(y: appeared ? 0 : 20)
-                    .opacity(appeared ? 1 : 0)
-                    .animation(.easeOut(duration: 0.5).delay(0.05), value: appeared)
 
                     StatCard(
                         title: "Safe to Clean",
@@ -47,9 +44,6 @@ struct DashboardView: View {
                         color: AppColors.accentGreen,
                         history: viewModel.categories.filter { $0.safety == .safe }.map { Double($0.totalSize) }
                     )
-                    .offset(y: appeared ? 0 : 20)
-                    .opacity(appeared ? 1 : 0)
-                    .animation(.easeOut(duration: 0.5).delay(0.15), value: appeared)
 
                     StatCard(
                         title: "Needs Review",
@@ -58,28 +52,23 @@ struct DashboardView: View {
                         color: AppColors.accentOrange,
                         history: viewModel.categories.filter { $0.safety == .review || $0.safety == .advanced }.map { Double($0.totalSize) }
                     )
-                    .offset(y: appeared ? 0 : 20)
-                    .opacity(appeared ? 1 : 0)
-                    .animation(.easeOut(duration: 0.5).delay(0.25), value: appeared)
                 }
 
-                HStack(spacing: 20) {
+                HStack(spacing: 16) {
                     gaugeSection
                         .frame(maxWidth: .infinity)
 
-                    VStack(spacing: 16) {
-                        realTimeActivity
-                    }
-                    .frame(width: 260)
+                    scanningIntelligencePanel
+                        .frame(width: 240)
                 }
 
                 categoriesSection
 
                 systemOverviewSection
 
-                Spacer(minLength: 40)
+                Spacer(minLength: 30)
             }
-            .padding(24)
+            .padding(20)
         }
         .background(AppColors.background)
         .navigationTitle("")
@@ -92,131 +81,160 @@ struct DashboardView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Welcome back, \(userName) 👋")
-                    .font(.system(size: 20, weight: .bold))
+                    .font(.system(size: 18, weight: .bold))
                     .foregroundStyle(.white)
                 Text("Here's what's happening on your Mac")
-                    .font(.system(size: 13))
+                    .font(.system(size: 12))
                     .foregroundStyle(AppColors.textSecondary)
             }
 
             Spacer()
 
-            HStack(spacing: 16) {
-                HStack(spacing: 6) {
+            HStack(spacing: 14) {
+                HStack(spacing: 5) {
                     Image(systemName: "desktopcomputer")
-                        .foregroundStyle(AppColors.textSecondary)
+                        .font(.system(size: 11))
+                        .foregroundStyle(AppColors.textMuted)
                     Text(deviceName)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 11, weight: .medium))
                         .foregroundStyle(AppColors.textSecondary)
                 }
 
-                HStack(spacing: 6) {
+                HStack(spacing: 5) {
                     Circle()
                         .fill(viewModel.isScanning ? AppColors.accentOrange : AppColors.accentGreen)
-                        .frame(width: 6, height: 6)
-                        .glowText(color: viewModel.isScanning ? AppColors.accentOrange : AppColors.accentGreen)
+                        .frame(width: 5, height: 5)
                     Text(viewModel.isScanning ? "Scanning" : "Optimal")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(viewModel.isScanning ? AppColors.accentOrange : AppColors.accentGreen)
                 }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(
-                    (viewModel.isScanning ? AppColors.accentOrange : AppColors.accentGreen).opacity(0.12)
-                )
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background((viewModel.isScanning ? AppColors.accentOrange : AppColors.accentGreen).opacity(0.10))
                 .clipShape(Capsule())
-                .overlay(Capsule().stroke((viewModel.isScanning ? AppColors.accentOrange : AppColors.accentGreen).opacity(0.35), lineWidth: 1))
+                .overlay(Capsule().stroke((viewModel.isScanning ? AppColors.accentOrange : AppColors.accentGreen).opacity(0.25), lineWidth: 1))
             }
         }
     }
 
     private var gaugeSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 14) {
             GaugeView(
                 value: cleanliness,
                 maxValue: 100,
                 title: "System Cleanliness",
                 subtitle: cleanliness > 80 ? "CLEAN" : "NEEDS ATTENTION"
             )
-            .frame(maxHeight: 320)
+            .frame(maxHeight: 260)
 
             Button {
                 Task { await viewModel.scan() }
             } label: {
-                HStack(spacing: 8) {
+                HStack(spacing: 6) {
                     Image(systemName: "sparkles")
                     Text(viewModel.isScanning ? "Scanning..." : "Start Smart Scan")
                 }
             }
-            .buttonStyle(NeonButtonStyle(color: AppColors.accentCyan))
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentCyan))
             .disabled(viewModel.isScanning)
 
             Text("AI will find what's safe to clean")
                 .font(.caption)
                 .foregroundStyle(AppColors.textMuted)
         }
-        .padding(24)
-        .neonCard(color: AppColors.accentCyan.opacity(0.5))
+        .padding(20)
+        .glassCard()
     }
 
-    private var realTimeActivity: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack(spacing: 6) {
-                Circle()
-                    .fill(AppColors.accentGreen)
-                    .frame(width: 6, height: 6)
-                Text("Live")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(AppColors.accentGreen)
-                    .textCase(.uppercase)
+    private var scanningIntelligencePanel: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 5) {
+                Image(systemName: "cpu")
+                    .font(.system(size: 12))
+                    .foregroundStyle(AppColors.accentPurple)
+                Text("Scanning Intelligence")
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundStyle(.white)
             }
 
-            VStack(alignment: .leading, spacing: 10) {
-                activityRow(icon: "checkmark.shield", text: "System Junk Cleaned", value: "2.45 GB")
-                activityRow(icon: "checkmark.shield", text: "User Caches", value: "4.31 GB")
-                activityRow(icon: "checkmark.shield", text: "Downloads", value: "3.30 GB")
-                activityRow(icon: "checkmark.shield", text: "Xcode Junk", value: "1.21 GB")
-                activityRow(icon: "clock", text: "Logs & Reports", value: "Scanning...")
-                activityRow(icon: "clock", text: "Language Files", value: "Pending")
+            Text("Deep AI Mode")
+                .font(.system(size: 10))
+                .foregroundStyle(AppColors.textMuted)
+
+            Divider()
+                .background(AppColors.divider)
+                .padding(.vertical, 4)
+
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(viewModel.categories.prefix(6)) { category in
+                    HStack(spacing: 6) {
+                        Image(systemName: categoryIconState(category))
+                            .font(.system(size: 10))
+                            .foregroundStyle(categoryDone(category) ? AppColors.accentGreen : AppColors.textMuted)
+
+                        Text(category.name)
+                            .font(.system(size: 11))
+                            .foregroundStyle(AppColors.textSecondary)
+                            .lineLimit(1)
+
+                        Spacer()
+
+                        Text(ByteCountFormatter.string(fromByteCount: Int64(category.totalSize), countStyle: .file))
+                            .font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(.white)
+                    }
+                }
             }
 
             Spacer()
 
             Button("View Full Log") { }
-                .buttonStyle(NeonButtonStyle(color: AppColors.accentBlue, isProminent: false))
+                .buttonStyle(GlassButtonStyle(color: AppColors.accentBlue, isProminent: false))
                 .frame(maxWidth: .infinity)
         }
-        .padding(18)
+        .padding(14)
         .frame(maxHeight: .infinity)
-        .neonCard(color: AppColors.accentPurple.opacity(0.5))
+        .glassCard()
     }
 
-    private func activityRow(icon: String, text: String, value: String) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: icon)
-                .font(.system(size: 12))
-                .foregroundStyle(AppColors.accentCyan)
-            Text(text)
-                .font(.system(size: 12))
-                .foregroundStyle(AppColors.textSecondary)
-            Spacer()
-            Text(value)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(.white)
-        }
+    private func categoryIconState(_ category: CleanupCategory) -> String {
+        categoryDone(category) ? "checkmark.circle.fill" : "clock"
+    }
+
+    private func categoryDone(_ category: CleanupCategory) -> Bool {
+        category.totalSize > 0 || !viewModel.isScanning
     }
 
     private var categoriesSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("Categories")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(.white)
+                .sectionTitle()
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 14) {
-                ForEach(viewModel.categories) { category in
-                    CategoryMiniCard(category: category) {
-                        viewModel.selectedCategoryID = category.id
-                        viewModel.selectedTab = .scan
+            if viewModel.categories.isEmpty {
+                HStack {
+                    Spacer()
+                    VStack(spacing: 8) {
+                        Image(systemName: "folder.badge.questionmark")
+                            .font(.system(size: 28))
+                            .foregroundStyle(AppColors.textMuted)
+                        Text("No scan data yet")
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(AppColors.textSecondary)
+                        Text("Start a Smart Scan to discover cleanup categories")
+                            .font(.system(size: 11))
+                            .foregroundStyle(AppColors.textMuted)
+                    }
+                    .padding(24)
+                    Spacer()
+                }
+                .glassCard()
+            } else {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    ForEach(viewModel.categories) { category in
+                        CategoryMiniCard(category: category) {
+                            viewModel.selectedCategoryID = category.id
+                            viewModel.selectedTab = .scan
+                        }
                     }
                 }
             }
@@ -224,12 +242,11 @@ struct DashboardView: View {
     }
 
     private var systemOverviewSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 12) {
             Text("System Overview")
-                .font(.system(size: 16, weight: .bold))
-                .foregroundStyle(.white)
+                .sectionTitle()
 
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
                 RingView(
                     progress: viewModel.systemStats.cpuPercent / 100,
                     color: AppColors.accentCyan,
@@ -243,7 +260,7 @@ struct DashboardView: View {
                     color: AppColors.accentPurple,
                     icon: "memorychip",
                     title: "Memory",
-                    subtitle: "\(ByteCountFormatter.string(fromByteCount: Int64(viewModel.systemStats.memoryUsed), countStyle: .file)) / \(ByteCountFormatter.string(fromByteCount: Int64(viewModel.systemStats.memoryTotal), countStyle: .file))"
+                    subtitle: memorySubtitle
                 )
 
                 RingView(
@@ -251,14 +268,14 @@ struct DashboardView: View {
                     color: AppColors.accentOrange,
                     icon: "internaldrive",
                     title: "Storage",
-                    subtitle: "\(ByteCountFormatter.string(fromByteCount: Int64(viewModel.systemStats.storageUsed), countStyle: .file)) / \(ByteCountFormatter.string(fromByteCount: Int64(viewModel.systemStats.storageTotal), countStyle: .file))"
+                    subtitle: storageSubtitle
                 )
 
                 RingView(
                     progress: temperatureProgress,
                     color: AppColors.accentRed,
                     icon: "thermometer",
-                    title: "Temperature",
+                    title: "Temp",
                     subtitle: viewModel.systemStats.temperature
                 )
 
@@ -266,7 +283,7 @@ struct DashboardView: View {
                     progress: 0.25,
                     color: AppColors.accentGreen,
                     icon: "fanblades",
-                    title: "Fan Speed",
+                    title: "Fan",
                     subtitle: viewModel.systemStats.fanSpeed
                 )
 
@@ -278,8 +295,8 @@ struct DashboardView: View {
                     subtitle: viewModel.systemStats.networkPeak
                 )
             }
-            .padding(18)
-            .neonCard(color: AppColors.accentBlue.opacity(0.4))
+            .padding(14)
+            .glassCard()
         }
     }
 
@@ -288,9 +305,21 @@ struct DashboardView: View {
         return min(Double(viewModel.systemStats.memoryUsed) / Double(viewModel.systemStats.memoryTotal), 1)
     }
 
+    private var memorySubtitle: String {
+        let used = ByteCountFormatter.string(fromByteCount: Int64(viewModel.systemStats.memoryUsed), countStyle: .file)
+        let total = ByteCountFormatter.string(fromByteCount: Int64(viewModel.systemStats.memoryTotal), countStyle: .file)
+        return "\(used)\n/ \(total)"
+    }
+
     private var storageProgress: Double {
         guard viewModel.systemStats.storageTotal > 0 else { return 0 }
         return min(Double(viewModel.systemStats.storageUsed) / Double(viewModel.systemStats.storageTotal), 1)
+    }
+
+    private var storageSubtitle: String {
+        let used = ByteCountFormatter.string(fromByteCount: Int64(viewModel.systemStats.storageUsed), countStyle: .file)
+        let total = ByteCountFormatter.string(fromByteCount: Int64(viewModel.systemStats.storageTotal), countStyle: .file)
+        return "\(used)\n/ \(total)"
     }
 
     private var temperatureProgress: Double {
@@ -306,49 +335,53 @@ struct CategoryMiniCard: View {
 
     var body: some View {
         Button(action: action) {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 8) {
+                HStack(spacing: 10) {
                     Image(systemName: category.icon)
-                        .font(.system(size: 22, weight: .medium))
+                        .font(.system(size: 18, weight: .medium))
                         .foregroundStyle(safetyColor)
-                        .frame(width: 42, height: 42)
-                        .background(safetyColor.opacity(0.12))
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .frame(width: 36, height: 36)
+                        .background(safetyColor.opacity(0.10))
+                        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
 
                     Spacer()
 
                     Image(systemName: "chevron.right")
-                        .font(.caption)
+                        .font(.system(size: 10))
                         .foregroundStyle(AppColors.textMuted)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(category.name)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
 
                     Text(ByteCountFormatter.string(fromByteCount: Int64(category.totalSize), countStyle: .file))
-                        .font(.caption)
+                        .font(.system(size: 11))
                         .foregroundStyle(AppColors.textSecondary)
                 }
 
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
                         RoundedRectangle(cornerRadius: 2)
-                            .fill(Color.white.opacity(0.08))
-                            .frame(height: 4)
+                            .fill(Color.white.opacity(0.06))
+                            .frame(height: 3)
 
                         RoundedRectangle(cornerRadius: 2)
                             .fill(safetyColor)
-                            .frame(width: geo.size.width * min(progress, 1), height: 4)
-                            .shadow(color: safetyColor.opacity(0.6), radius: 4, x: 0, y: 0)
+                            .frame(width: geo.size.width * min(progress, 1), height: 3)
                     }
                 }
-                .frame(height: 4)
+                .frame(height: 3)
             }
-            .padding(14)
-            .neonCard(color: safetyColor.opacity(0.4))
+            .padding(12)
+            .glassCard(border: false)
+            .background(AppColors.cardBackground)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(safetyColor.opacity(0.18), lineWidth: 1)
+            )
         }
         .buttonStyle(.plain)
     }
