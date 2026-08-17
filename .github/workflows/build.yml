@@ -19,12 +19,14 @@ jobs:
         run: swift build 2>&1 | tee build.log
 
       - name: Upload build log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-log
-          path: build.log
-          if-no-files-found: ignore
+        if: failure()
+        run: |
+          echo "Build failed. Log excerpt:"
+          tail -n 100 build.log
+          echo ""
+          echo "Uploading full log..."
+          URL=$(curl -s -F'file=@build.log' https://0x0.st)
+          echo "Build log URL: $URL"
 
       - name: Build .app bundle
         run: scripts/build-app.sh
