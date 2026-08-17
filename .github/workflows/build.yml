@@ -110,6 +110,7 @@ jobs:
           cd "$CLEAN_DIR"
           zip -r -X "$GITHUB_WORKSPACE/QuanSweep-${VERSION}.zip" QuanSweep.app
           cd "$GITHUB_WORKSPACE"
+          rm -f QuanSweep-app.zip
           ls -la QuanSweep-*.zip
 
       - name: Upload to GitHub Release
