@@ -31,12 +31,31 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          ERROR=$(tail -n 5 build.log | tr '\n' ' ' | cut -c1-120)
-          curl -s -X POST \
-            -H "Authorization: Bearer $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
-            -d "{\"state\":\"failure\",\"context\":\"swift-build-error\",\"description\":\"$ERROR\"}"
+          python3 - <<'PY'
+          import json, os, subprocess, urllib.request
+          with open('build.log') as f:
+              lines = f.readlines()
+          error = ' '.join(lines[-5:])[:120]
+          data = json.dumps({
+              'state': 'failure',
+              'context': 'swift-build-error',
+              'description': error
+          }).encode()
+          req = urllib.request.Request(
+              f"https://api.github.com/repos/{os.environ['GITHUB_REPOSITORY']}/statuses/{os.environ['GITHUB_SHA']}",
+              data=data,
+              headers={
+                  'Authorization': f"Bearer {os.environ['GITHUB_TOKEN']}",
+                  'Accept': 'application/vnd.github+json'
+              },
+              method='POST'
+          )
+          try:
+              resp = urllib.request.urlopen(req)
+              print(resp.read().decode())
+          except Exception as e:
+              print(f"Failed to post status: {e}")
+          PY
 
       - name: Build .app bundle
         run: scripts/build-app.sh
