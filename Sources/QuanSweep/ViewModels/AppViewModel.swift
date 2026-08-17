@@ -11,6 +11,8 @@ final class AppViewModel: ObservableObject {
     @Published var selectedTab: Tab = .dashboard
     @Published var lastResult: QuarantineSession?
     @Published var showPermissionAlert = false
+    @Published var currentVersion = ""
+    @Published var latestVersion: String?
 
     enum Tab {
         case dashboard, scan, quarantine
@@ -67,6 +69,11 @@ final class AppViewModel: ObservableObject {
 
     func loadQuarantine() async {
         quarantineSessions = await quarantine.sessions()
+    }
+
+    func loadVersionInfo() async {
+        currentVersion = await VersionChecker.shared.currentVersion()
+        latestVersion = await VersionChecker.shared.latestVersion()
     }
 
     func cleanAllSafe() async {

@@ -12,6 +12,7 @@ struct ContentView: View {
         }
         .task {
             await viewModel.loadQuarantine()
+            await viewModel.loadVersionInfo()
         }
     }
 
@@ -61,8 +62,45 @@ struct ContentView: View {
                 .padding(.horizontal, 12)
                 .padding(.bottom, 12)
             }
+
+            versionFooter
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
         }
         .background(Color(.windowBackgroundColor).opacity(0.5))
+    }
+
+    private var versionFooter: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 6) {
+                Text("QuanSweep \(viewModel.currentVersion)")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+
+                if let latest = viewModel.latestVersion, latest != viewModel.currentVersion {
+                    Button {
+                        VersionChecker.shared.openReleasesPage()
+                    } label: {
+                        HStack(spacing: 2) {
+                            Image(systemName: "arrow.up.circle.fill")
+                            Text("\(latest) available")
+                        }
+                        .font(.caption)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.green)
+                }
+            }
+
+            Button {
+                VersionChecker.shared.openReleasesPage()
+            } label: {
+                Text("Check for updates")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     @ViewBuilder
