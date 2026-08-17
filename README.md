@@ -29,8 +29,10 @@ Built with native Swift + SwiftUI. No Electron, no background daemon, no network
 - **Cache Analyzer** — classify caches by owner and skip running apps.
 - **Temporary Files** — clean abandoned files in `/tmp` and your user temp folder.
 - **User Logs, Trash, Xcode Build Data** — safe, regeneratable cleanup.
+- **App Uninstaller** — remove an app from `/Applications` and its related `~/Library` files in one reversible action.
 - **Confidence Engine** — every item gets a 0–100% safety score. Only high-confidence items are selected by default.
 - **Quarantine + Undo** — cleaned items are moved, not deleted. Restore them anytime within 30 days.
+- **Search & Sort** — filter by name or path and sort scan/quarantine results by size, name, date, or confidence.
 - **Protection List** — system folders, documents, photos, mail, keychains, and browser profiles are never touched.
 - **Audit Log** — every action is recorded.
 
@@ -141,12 +143,13 @@ QuanSweep/
 ## Roadmap
 
 - [x] V0.1 — App residues, caches, temp files, logs, trash, Xcode data
-- [ ] V0.2 — Confidence scoring improvements and orphan detection
-- [ ] V0.3 — Developer cleanup (Go, Node, Python, Rust, Xcode)
-- [ ] V0.4 — Downloads + installer analyzer
-- [ ] V0.5 — Large files + duplicate finder
-- [ ] V0.6 — AI model analyzer (GGUF, MLX, HuggingFace, Ollama)
-- [ ] V1.0 — Polished native SwiftUI GUI and signed release builds
+- [x] V0.2 — Confidence scoring, orphan detection, search/sort, category drill-down
+- [x] V0.3 — App Uninstaller
+- [ ] V0.4 — Developer cleanup (Go, Node, Python, Rust, Xcode, Homebrew)
+- [ ] V0.5 — Downloads + installer analyzer
+- [ ] V0.6 — Large files + duplicate finder
+- [ ] V0.7 — AI model analyzer (GGUF, MLX, HuggingFace, Ollama)
+- [ ] V1.0 — Signed and notarized release builds
 
 ## Contributing
 
