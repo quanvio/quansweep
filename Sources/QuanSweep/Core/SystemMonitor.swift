@@ -120,7 +120,7 @@ actor SystemMonitor {
         }
         guard result == KERN_SUCCESS else { return (0, 0) }
 
-        let pageSize = UInt64(vm_kernel_page_size)
+        let pageSize = UInt64(getpagesize())
         let used = UInt64(info.active_count + info.inactive_count + info.wire_count) * pageSize
         let total = UInt64(info.active_count + info.inactive_count + info.wire_count + info.free_count) * pageSize
         return (used, total)
