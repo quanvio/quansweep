@@ -187,7 +187,6 @@ struct ScanView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
                 .padding(.bottom, 14)
-                .frame(height: 80)
 
             if viewModel.displayCategories.isEmpty && !viewModel.isScanning {
                 emptyState
@@ -199,109 +198,79 @@ struct ScanView: View {
     }
 
     private func leftPanelWidth(for total: CGFloat) -> CGFloat {
-        min(max(280, total * 0.28), 340)
+        min(max(300, total * 0.30), 360)
     }
 
     private var rightHeader: some View {
         GeometryReader { geo in
-            let isCompact = geo.size.width < 620
+            let narrow = geo.size.width < 560
 
-            Group {
-                if isCompact {
-                    VStack(alignment: .leading, spacing: 12) {
-                        headerTitle
+            HStack(spacing: 12) {
+                HStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass.circle")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(AppColors.accentCyan)
+                        .frame(width: 34, height: 34)
+                        .background(AppColors.accentCyan.opacity(0.10))
+                        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
 
-                        HStack(spacing: 10) {
-                            searchField
-                                .frame(maxWidth: .infinity)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Scan Results")
+                            .font(.system(size: 20, weight: .bold))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
 
-                            sortButtons
-
-                            Button {
-                                showNewScanConfirmation = true
-                            } label: {
-                                Label("", systemImage: "arrow.clockwise")
-                            }
-                            .buttonStyle(GlassButtonStyle(color: AppColors.accentCyan, isProminent: false))
-                            .fixedSize(horizontal: true, vertical: false)
-                            .help("New Scan")
-                        }
-                    }
-                } else {
-                    HStack(spacing: 14) {
-                        headerTitle
-
-                        Spacer(minLength: 0)
-
-                        HStack(spacing: 12) {
-                            searchField
-                                .frame(width: 200)
-
-                            sortButtons
-
-                            Button {
-                                showNewScanConfirmation = true
-                            } label: {
-                                Label("New Scan", systemImage: "arrow.clockwise")
-                            }
-                            .buttonStyle(GlassButtonStyle(color: AppColors.accentCyan, isProminent: false))
-                            .fixedSize(horizontal: true, vertical: false)
-                        }
+                        Text("Smart Scan found items that can be safely quarantined.")
+                            .font(.system(size: 11))
+                            .foregroundStyle(AppColors.textSecondary)
+                            .lineLimit(1)
                     }
                 }
+                .layoutPriority(1)
+
+                Spacer(minLength: 12)
+
+                HStack(spacing: 10) {
+                    HStack(spacing: 6) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 11))
+                            .foregroundStyle(AppColors.textMuted)
+                        TextField("Search items...", text: $viewModel.scanSearchText)
+                            .textFieldStyle(.plain)
+                            .foregroundStyle(.white)
+                            .font(.system(size: 12))
+                    }
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 7)
+                    .frame(minWidth: 100, idealWidth: 180, maxWidth: 220)
+                    .background(AppColors.cardBackground)
+                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.cardBorder, lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                    sortButtons(narrow: narrow)
+
+                    Button {
+                        showNewScanConfirmation = true
+                    } label: {
+                        Label(narrow ? "" : "New Scan", systemImage: "arrow.clockwise")
+                    }
+                    .buttonStyle(GlassButtonStyle(color: AppColors.accentCyan, isProminent: false))
+                    .fixedSize(horizontal: true, vertical: false)
+                    .help("New Scan")
+                }
             }
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         }
     }
 
-    private var headerTitle: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 10) {
-                Image(systemName: "magnifyingglass.circle")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(AppColors.accentCyan)
-                    .frame(width: 34, height: 34)
-                    .background(AppColors.accentCyan.opacity(0.10))
-                    .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
-
-                Text("Scan Results")
-                    .font(.system(size: 22, weight: .bold))
-                    .foregroundStyle(.white)
-            }
-
-            Text("Smart Scan found items that can be safely quarantined.")
-                .font(.system(size: 12))
-                .foregroundStyle(AppColors.textSecondary)
-                .lineLimit(1)
-        }
-    }
-
-    private var searchField: some View {
-        HStack(spacing: 6) {
-            Image(systemName: "magnifyingglass")
-                .font(.system(size: 11))
-                .foregroundStyle(AppColors.textMuted)
-            TextField("Search items...", text: $viewModel.scanSearchText)
-                .textFieldStyle(.plain)
-                .foregroundStyle(.white)
-                .font(.system(size: 12))
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 7)
-        .background(AppColors.cardBackground)
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.cardBorder, lineWidth: 1))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
-    }
-
-    private var sortButtons: some View {
+    private func sortButtons(narrow: Bool) -> some View {
         HStack(spacing: 0) {
             ForEach(AppViewModel.ScanSortOption.allCases, id: \.self) { option in
                 Button {
                     viewModel.scanSortOption = option
                 } label: {
                     Text(option.rawValue)
-                        .font(.system(size: 11, weight: .semibold))
-                        .padding(.horizontal, 10)
+                        .font(.system(size: narrow ? 10 : 11, weight: .semibold))
+                        .padding(.horizontal, narrow ? 7 : 10)
                         .padding(.vertical, 6)
                         .foregroundStyle(viewModel.scanSortOption == option ? .white : AppColors.textSecondary)
                         .background(viewModel.scanSortOption == option ? AppColors.accentBlue.opacity(0.25) : Color.clear)
@@ -319,31 +288,28 @@ struct ScanView: View {
 
     private func tableContainer(in geo: GeometryProxy) -> some View {
         let rightWidth = geo.size.width - leftPanelWidth(for: geo.size.width)
-        let tableWidth = max(rightWidth - 40, 640)
+        let tableWidth = max(rightWidth - 40, 520)
 
-        return ScrollView(.horizontal, showsIndicators: true) {
-            VStack(spacing: 0) {
-                tableHeader(totalWidth: tableWidth)
+        return VStack(spacing: 0) {
+            tableHeader(totalWidth: tableWidth)
 
-                ScrollView {
-                    LazyVStack(spacing: 6) {
-                        ForEach($viewModel.displayCategories) { $category in
-                            ScanCategorySection(
-                                category: $category,
-                                totalWidth: tableWidth,
-                                onSelectItem: { item in
-                                    selectedItem = item
-                                }
-                            )
-                        }
+            ScrollView {
+                LazyVStack(spacing: 6) {
+                    ForEach($viewModel.displayCategories) { $category in
+                        ScanCategorySection(
+                            category: $category,
+                            totalWidth: tableWidth,
+                            onSelectItem: { item in
+                                selectedItem = item
+                            }
+                        )
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 12)
                 }
-
-                bottomBar
+                .padding(.horizontal, 20)
+                .padding(.bottom, 12)
             }
-            .frame(minWidth: rightWidth)
+
+            bottomBar
         }
     }
 
@@ -414,15 +380,14 @@ struct ScanView: View {
     }
 
     static func columnWidths(for totalWidth: CGFloat) -> ColumnWidths {
-        let minWidth: CGFloat = 680
-        let width = max(totalWidth, minWidth)
         let checkbox: CGFloat = 24
-        let actions: CGFloat = max(70, width * 0.09)
-        let confidence: CGFloat = max(100, width * 0.13)
-        let size: CGFloat = 70
-        let items: CGFloat = 50
-        let name: CGFloat = width - checkbox - confidence - size - items - actions - 60
-        return ColumnWidths(checkbox: checkbox, name: max(name, 160), confidence: confidence, size: size, items: items, actions: actions)
+        let confidence: CGFloat = 92
+        let size: CGFloat = 64
+        let items: CGFloat = 44
+        let actions: CGFloat = 44
+        let spacing: CGFloat = 60
+        let name = max(totalWidth - checkbox - confidence - size - items - actions - spacing, 120)
+        return ColumnWidths(checkbox: checkbox, name: name, confidence: confidence, size: size, items: items, actions: actions)
     }
 
     // MARK: - Empty State

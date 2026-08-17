@@ -309,7 +309,7 @@ struct SpeedometerGauge: View {
 
                 // Needle with glow
                 let needleAngle = 135 + progress * 270
-                NeedleShape(angle: needleAngle, length: radius * 0.78, width: max(4, size * 0.018))
+                NeedleShape(angle: needleAngle, length: radius * 0.72, width: max(3.5, size * 0.016))
                     .fill(
                         LinearGradient(
                             colors: [AppColors.accentCyan, .white],
@@ -317,7 +317,7 @@ struct SpeedometerGauge: View {
                             endPoint: .trailing
                         )
                     )
-                    .shadow(color: AppColors.accentCyan.opacity(0.8), radius: 6, x: 0, y: 0)
+                    .shadow(color: AppColors.accentCyan.opacity(0.8), radius: 5, x: 0, y: 0)
 
                 // Needle cap
                 Circle()
@@ -326,40 +326,40 @@ struct SpeedometerGauge: View {
                             colors: [.white, AppColors.accentCyan, AppColors.background],
                             center: .center,
                             startRadius: 0,
-                            endRadius: max(8, size * 0.04)
+                            endRadius: max(7, size * 0.035)
                         )
                     )
-                    .frame(width: max(14, size * 0.06), height: max(14, size * 0.06))
-                    .overlay(Circle().stroke(AppColors.accentCyan.opacity(0.8), lineWidth: 1.5))
-                    .shadow(color: AppColors.accentCyan.opacity(0.6), radius: 4, x: 0, y: 0)
+                    .frame(width: max(12, size * 0.05), height: max(12, size * 0.05))
+                    .overlay(Circle().stroke(AppColors.accentCyan.opacity(0.8), lineWidth: 1.2))
+                    .shadow(color: AppColors.accentCyan.opacity(0.6), radius: 3, x: 0, y: 0)
 
                 // Center text
-                VStack(spacing: 3) {
+                VStack(spacing: 2) {
                     Text(title)
-                        .font(.system(size: max(8, size * 0.04), weight: .bold))
+                        .font(.system(size: max(8, size * 0.036), weight: .bold))
                         .foregroundStyle(AppColors.textMuted)
                         .textCase(.uppercase)
 
-                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    HStack(alignment: .firstTextBaseline, spacing: 3) {
                         Text(valueNumber)
-                            .font(.system(size: max(28, size * 0.18), weight: .bold, design: .rounded))
+                            .font(.system(size: max(22, size * 0.13), weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
                             .lineLimit(1)
                             .minimumScaleFactor(0.6)
 
                         Text(valueUnit)
-                            .font(.system(size: max(12, size * 0.07), weight: .semibold))
+                            .font(.system(size: max(11, size * 0.05), weight: .semibold))
                             .foregroundStyle(AppColors.textSecondary)
                             .lineLimit(1)
                     }
-                    .shadow(color: .white.opacity(0.10), radius: 6, x: 0, y: 0)
+                    .shadow(color: .white.opacity(0.10), radius: 4, x: 0, y: 0)
 
                     Text(subtitle)
-                        .font(.system(size: max(9, size * 0.04), weight: .semibold))
+                        .font(.system(size: max(9, size * 0.036), weight: .semibold))
                         .foregroundStyle(AppColors.accentCyan)
                         .lineLimit(1)
                 }
-                .offset(y: size * 0.06)
+                .offset(y: size * 0.10)
             }
         }
         .aspectRatio(1.25, contentMode: .fit)
