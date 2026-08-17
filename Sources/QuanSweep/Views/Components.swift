@@ -336,30 +336,30 @@ struct SpeedometerGauge: View {
                 // Center text
                 VStack(spacing: 2) {
                     Text(title)
-                        .font(.system(size: max(8, size * 0.036), weight: .bold))
+                        .font(.system(size: max(7, size * 0.028), weight: .bold))
                         .foregroundStyle(AppColors.textMuted)
                         .textCase(.uppercase)
 
                     HStack(alignment: .firstTextBaseline, spacing: 3) {
                         Text(valueNumber)
-                            .font(.system(size: max(22, size * 0.13), weight: .bold, design: .rounded))
+                            .font(.system(size: max(20, size * 0.11), weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
                             .lineLimit(1)
                             .minimumScaleFactor(0.6)
 
                         Text(valueUnit)
-                            .font(.system(size: max(11, size * 0.05), weight: .semibold))
+                            .font(.system(size: max(10, size * 0.042), weight: .semibold))
                             .foregroundStyle(AppColors.textSecondary)
                             .lineLimit(1)
                     }
                     .shadow(color: .white.opacity(0.10), radius: 4, x: 0, y: 0)
 
                     Text(subtitle)
-                        .font(.system(size: max(9, size * 0.036), weight: .semibold))
+                        .font(.system(size: max(8, size * 0.03), weight: .semibold))
                         .foregroundStyle(AppColors.accentCyan)
                         .lineLimit(1)
                 }
-                .offset(y: size * 0.10)
+                .offset(y: size * 0.16)
             }
         }
         .aspectRatio(1.25, contentMode: .fit)

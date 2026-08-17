@@ -185,8 +185,8 @@ struct ScanView: View {
         VStack(spacing: 0) {
             rightHeader
                 .padding(.horizontal, 20)
-                .padding(.top, 20)
-                .padding(.bottom, 14)
+                .padding(.top, 18)
+                .padding(.bottom, 12)
 
             if viewModel.displayCategories.isEmpty && !viewModel.isScanning {
                 emptyState
@@ -198,89 +198,77 @@ struct ScanView: View {
     }
 
     private func leftPanelWidth(for total: CGFloat) -> CGFloat {
-        min(max(300, total * 0.30), 360)
+        min(max(280, total * 0.28), 340)
     }
 
     private var rightHeader: some View {
-        GeometryReader { geo in
-            let narrow = geo.size.width < 560
-
-            HStack(spacing: 12) {
-                HStack(spacing: 10) {
-                    Image(systemName: "magnifyingglass.circle")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(AppColors.accentCyan)
-                        .frame(width: 34, height: 34)
-                        .background(AppColors.accentCyan.opacity(0.10))
-                        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
-
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Scan Results")
-                            .font(.system(size: 20, weight: .bold))
-                            .foregroundStyle(.white)
-                            .lineLimit(1)
-
-                        Text("Smart Scan found items that can be safely quarantined.")
-                            .font(.system(size: 11))
-                            .foregroundStyle(AppColors.textSecondary)
-                            .lineLimit(1)
-                    }
-                }
+        HStack(alignment: .center, spacing: 12) {
+            Text("Scan Results")
+                .font(.system(size: 18, weight: .bold))
+                .foregroundStyle(.white)
+                .lineLimit(1)
                 .layoutPriority(1)
 
-                Spacer(minLength: 12)
+            Spacer(minLength: 8)
 
-                HStack(spacing: 10) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 11))
-                            .foregroundStyle(AppColors.textMuted)
-                        TextField("Search items...", text: $viewModel.scanSearchText)
-                            .textFieldStyle(.plain)
-                            .foregroundStyle(.white)
-                            .font(.system(size: 12))
-                    }
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 7)
-                    .frame(minWidth: 100, idealWidth: 180, maxWidth: 220)
-                    .background(AppColors.cardBackground)
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.cardBorder, lineWidth: 1))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-
-                    sortButtons(narrow: narrow)
-
-                    Button {
-                        showNewScanConfirmation = true
-                    } label: {
-                        Label(narrow ? "" : "New Scan", systemImage: "arrow.clockwise")
-                    }
-                    .buttonStyle(GlassButtonStyle(color: AppColors.accentCyan, isProminent: false))
-                    .fixedSize(horizontal: true, vertical: false)
-                    .help("New Scan")
+            HStack(spacing: 8) {
+                HStack(spacing: 6) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 11))
+                        .foregroundStyle(AppColors.textMuted)
+                    TextField("Search items...", text: $viewModel.scanSearchText)
+                        .textFieldStyle(.plain)
+                        .foregroundStyle(.white)
+                        .font(.system(size: 12))
                 }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .frame(minWidth: 100, idealWidth: 160, maxWidth: 180)
+                .background(AppColors.cardBackground)
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.cardBorder, lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                sortMenu
+
+                Button {
+                    showNewScanConfirmation = true
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(AppColors.accentCyan)
+                        .frame(width: 30, height: 30)
+                        .background(AppColors.accentCyan.opacity(0.10))
+                        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.accentCyan.opacity(0.30), lineWidth: 1))
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                }
+                .buttonStyle(.plain)
+                .help("New Scan")
             }
         }
     }
 
-    private func sortButtons(narrow: Bool) -> some View {
-        HStack(spacing: 0) {
+    private var sortMenu: some View {
+        Menu {
             ForEach(AppViewModel.ScanSortOption.allCases, id: \.self) { option in
-                Button {
+                Button(option.rawValue) {
                     viewModel.scanSortOption = option
-                } label: {
-                    Text(option.rawValue)
-                        .font(.system(size: narrow ? 10 : 11, weight: .semibold))
-                        .padding(.horizontal, narrow ? 7 : 10)
-                        .padding(.vertical, 6)
-                        .foregroundStyle(viewModel.scanSortOption == option ? .white : AppColors.textSecondary)
-                        .background(viewModel.scanSortOption == option ? AppColors.accentBlue.opacity(0.25) : Color.clear)
                 }
-                .buttonStyle(.plain)
             }
+        } label: {
+            HStack(spacing: 4) {
+                Text(viewModel.scanSortOption.rawValue)
+                    .font(.system(size: 11, weight: .semibold))
+                Image(systemName: "chevron.down")
+                    .font(.system(size: 9))
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(AppColors.cardBackground)
+            .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.cardBorder, lineWidth: 1))
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .foregroundStyle(AppColors.textSecondary)
         }
-        .background(AppColors.cardBackground)
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.cardBorder, lineWidth: 1))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .menuStyle(.borderlessButton)
         .fixedSize(horizontal: true, vertical: false)
     }
 
@@ -288,7 +276,7 @@ struct ScanView: View {
 
     private func tableContainer(in geo: GeometryProxy) -> some View {
         let rightWidth = geo.size.width - leftPanelWidth(for: geo.size.width)
-        let tableWidth = max(rightWidth - 40, 520)
+        let tableWidth = max(rightWidth - 40, 500)
 
         return VStack(spacing: 0) {
             tableHeader(totalWidth: tableWidth)
@@ -308,6 +296,7 @@ struct ScanView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 12)
             }
+            .frame(maxHeight: .infinity)
 
             bottomBar
         }
@@ -338,6 +327,7 @@ struct ScanView: View {
                 .foregroundStyle(AppColors.textMuted)
                 .textCase(.uppercase)
                 .frame(width: widths.name, alignment: .leading)
+                .lineLimit(1)
 
             Spacer()
 
@@ -346,24 +336,24 @@ struct ScanView: View {
                 .foregroundStyle(AppColors.textMuted)
                 .textCase(.uppercase)
                 .frame(width: widths.confidence, alignment: .leading)
+                .lineLimit(1)
 
             Text("Size")
                 .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(AppColors.textMuted)
                 .textCase(.uppercase)
                 .frame(width: widths.size, alignment: .trailing)
+                .lineLimit(1)
 
             Text("Items")
                 .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(AppColors.textMuted)
                 .textCase(.uppercase)
                 .frame(width: widths.items, alignment: .trailing)
+                .lineLimit(1)
 
-            Text("Actions")
-                .font(.system(size: 10, weight: .bold))
-                .foregroundStyle(AppColors.textMuted)
-                .textCase(.uppercase)
-                .frame(width: widths.actions, alignment: .trailing)
+            Color.clear
+                .frame(width: widths.actions)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 8)
@@ -381,11 +371,11 @@ struct ScanView: View {
 
     static func columnWidths(for totalWidth: CGFloat) -> ColumnWidths {
         let checkbox: CGFloat = 24
-        let confidence: CGFloat = 92
-        let size: CGFloat = 64
+        let confidence: CGFloat = 86
+        let size: CGFloat = 62
         let items: CGFloat = 44
-        let actions: CGFloat = 44
-        let spacing: CGFloat = 60
+        let actions: CGFloat = 36
+        let spacing: CGFloat = 56
         let name = max(totalWidth - checkbox - confidence - size - items - actions - spacing, 120)
         return ColumnWidths(checkbox: checkbox, name: name, confidence: confidence, size: size, items: items, actions: actions)
     }
