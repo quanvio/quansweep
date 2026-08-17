@@ -296,12 +296,12 @@ struct SpeedometerGauge: View {
                         let t = Double(label) / 100.0
                         let angle = 135 + t * 270
                         let rad = angle * .pi / 180
-                        let labelRadius = radius - outerLine * 0.95
+                        let labelRadius = radius - outerLine * 1.12
                         let x = center.x + Darwin.cos(rad) * labelRadius
                         let y = center.y + Darwin.sin(rad) * labelRadius
 
                         Text("\(label)")
-                            .font(.system(size: max(8, size * 0.038), weight: .bold))
+                            .font(.system(size: max(7, size * 0.028), weight: .bold))
                             .foregroundStyle(AppColors.textMuted.opacity(0.8))
                             .position(x: x, y: y)
                     }
@@ -336,26 +336,26 @@ struct SpeedometerGauge: View {
                 // Center text
                 VStack(spacing: 2) {
                     Text(title)
-                        .font(.system(size: max(7, size * 0.028), weight: .bold))
+                        .font(.system(size: max(7, size * 0.024), weight: .bold))
                         .foregroundStyle(AppColors.textMuted)
                         .textCase(.uppercase)
 
                     HStack(alignment: .firstTextBaseline, spacing: 3) {
                         Text(valueNumber)
-                            .font(.system(size: max(20, size * 0.11), weight: .bold, design: .rounded))
+                            .font(.system(size: max(16, size * 0.085), weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
                             .lineLimit(1)
                             .minimumScaleFactor(0.6)
 
                         Text(valueUnit)
-                            .font(.system(size: max(10, size * 0.042), weight: .semibold))
+                            .font(.system(size: max(9, size * 0.034), weight: .semibold))
                             .foregroundStyle(AppColors.textSecondary)
                             .lineLimit(1)
                     }
                     .shadow(color: .white.opacity(0.10), radius: 4, x: 0, y: 0)
 
                     Text(subtitle)
-                        .font(.system(size: max(8, size * 0.03), weight: .semibold))
+                        .font(.system(size: max(8, size * 0.026), weight: .semibold))
                         .foregroundStyle(AppColors.accentCyan)
                         .lineLimit(1)
                 }

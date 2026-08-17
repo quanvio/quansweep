@@ -184,7 +184,6 @@ struct ScanView: View {
     private func rightPanel(in geo: GeometryProxy) -> some View {
         VStack(spacing: 0) {
             rightHeader
-                .padding(.horizontal, 20)
                 .padding(.top, 18)
                 .padding(.bottom, 12)
 
@@ -195,6 +194,7 @@ struct ScanView: View {
                     .frame(maxHeight: .infinity)
             }
         }
+        .padding(.horizontal, 12)
         .background(AppColors.background)
     }
 
@@ -277,11 +277,12 @@ struct ScanView: View {
 
     private func tableContainer(in geo: GeometryProxy) -> some View {
         let rightWidth = geo.size.width - leftPanelWidth(for: geo.size.width)
-        let tableWidth = max(rightWidth - 40, 500)
+        let tableWidth = max(rightWidth - 72, 260)
 
         return GeometryReader { tableGeo in
             VStack(spacing: 0) {
                 tableHeader(totalWidth: tableWidth)
+                    .padding(.horizontal, 12)
 
                 ScrollView {
                     LazyVStack(spacing: 6) {
@@ -295,7 +296,7 @@ struct ScanView: View {
                             )
                         }
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 12)
                     .padding(.bottom, 12)
                 }
                 .frame(height: max(tableGeo.size.height - 64, 120))
@@ -358,7 +359,7 @@ struct ScanView: View {
             Color.clear
                 .frame(width: widths.actions)
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(Color.white.opacity(0.02))
     }
@@ -495,7 +496,6 @@ struct ScanView: View {
             .buttonStyle(GlassButtonStyle(color: AppColors.accentCyan))
             .disabled(viewModel.totalSelectedSize == 0 || viewModel.isScanning)
         }
-        .padding(.horizontal, 16)
         .padding(.vertical, 12)
         .background(AppColors.cardBackground)
         .overlay(

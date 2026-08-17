@@ -171,6 +171,7 @@ QuanSweep/
 - [x] V1.2.8 — Scan Results fits without horizontal scrolling, header/bottom bar adapt to width, smaller speedometer text
 - [x] V1.2.9 — Clean single-line Scan Results header with sort menu, no header truncation/gap, non-wrapping table columns
 - [x] V1.2.10 — Fix large vertical gap in Scan Results by giving the table list an explicit height
+- [x] V1.2.11 — Reflow Scan Results right panel with proper edge gaps, smaller speedometer fonts/tick labels, remove duplicate percentage in scanning overlay
 - [ ] V1.3.0 — Signed and notarized release builds
 
 ## Contributing

@@ -21,8 +21,8 @@ struct ScanningOverlayView: View {
                 .opacity(0.95)
                 .ignoresSafeArea()
 
-            VStack(spacing: 24) {
-                Spacer()
+            VStack(spacing: 18) {
+                Spacer(minLength: 20)
 
                 ZStack {
                     orbitalRing(radius: 150, icons: Array(categoryIcons.prefix(4)), rotation: outerRotation)
@@ -40,19 +40,13 @@ struct ScanningOverlayView: View {
                 }
                 .frame(width: 340, height: 340)
 
-                VStack(spacing: 6) {
-                    Text("\(progressPercent)%")
-                        .font(.system(size: 42, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
+                Text(viewModel.statusMessage)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(AppColors.textSecondary)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 360)
 
-                    Text(viewModel.statusMessage)
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundStyle(AppColors.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .frame(maxWidth: 360)
-                }
-
-                Spacer()
+                Spacer(minLength: 20)
 
                 Button {
                     // Scan is not cancellable in current engine; button provides feedback.
@@ -61,7 +55,7 @@ struct ScanningOverlayView: View {
                         .font(.system(size: 12, weight: .semibold))
                 }
                 .buttonStyle(GlassButtonStyle(color: AppColors.accentRed, isProminent: false))
-                .padding(.bottom, 28)
+                .padding(.bottom, 24)
             }
         }
         .onAppear {
