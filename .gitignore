@@ -1,0 +1,10 @@
+.DS_Store
+/.build
+/Packages
+/*.xcodeproj
+xcuserdata/
+DerivedData/
+QuanSweep.app
+QuanSweep-*.zip
+logo/AppIcon.icns
+logo/AppIcon.iconset
