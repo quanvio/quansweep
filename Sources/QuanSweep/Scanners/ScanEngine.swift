@@ -14,13 +14,14 @@ enum ScanEngine {
         AIModelScanner()
     ]
 
-    static func scanAll(progress: ((String) -> Void)? = nil) async -> [CleanupCategory] {
+    static func scanAll(progress: ((Int, Int, String) -> Void)? = nil) async -> [CleanupCategory] {
         var categories: [CleanupCategory] = []
+        let total = allScanners.count
 
         await withTaskGroup(of: CleanupCategory.self) { group in
-            for scanner in allScanners {
+            for (index, scanner) in allScanners.enumerated() {
                 group.addTask {
-                    progress?(scanner.name)
+                    progress?(index, total, scanner.name)
                     do {
                         return try await scanner.scanWithSafety()
                     } catch {

@@ -18,6 +18,9 @@ let package = Package(
             path: "Sources/QuanSweep",
             resources: [
                 .process("Resources")
+            ],
+            linkerSettings: [
+                .linkedFramework("IOKit")
             ]
         )
     ]

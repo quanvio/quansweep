@@ -183,46 +183,4 @@ struct ItemDetailView: View {
     }
 }
 
-struct DetailRow: View {
-    let label: String
-    let value: String
 
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Text(label)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundStyle(.secondary)
-                .frame(width: 100, alignment: .leading)
-
-            Text(value)
-                .font(.system(size: 12, weight: .regular))
-                .lineLimit(3)
-                .help(value)
-
-            Spacer()
-        }
-    }
-}
-
-struct SafetyBadge: View {
-    let safety: SafetyLevel
-
-    var body: some View {
-        Text(safety.rawValue)
-            .font(.system(size: 11, weight: .bold))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(color.opacity(0.15))
-            .foregroundStyle(color)
-            .clipShape(Capsule())
-    }
-
-    private var color: Color {
-        switch safety {
-        case .safe: return .green
-        case .review: return .orange
-        case .advanced: return .red
-        case .protected: return .blue
-        }
-    }
-}

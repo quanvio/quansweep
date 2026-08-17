@@ -8,7 +8,9 @@ struct QuanSweepApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(viewModel)
-                .frame(minWidth: 900, minHeight: 650)
+                .frame(minWidth: 1100, minHeight: 780)
+                .background(AppColors.background)
+                .preferredColorScheme(.dark)
         }
         .windowResizability(.contentSize)
         .commands {

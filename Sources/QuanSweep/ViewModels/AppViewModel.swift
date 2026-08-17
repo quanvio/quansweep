@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 @MainActor
 final class AppViewModel: ObservableObject {
@@ -14,10 +15,13 @@ final class AppViewModel: ObservableObject {
     @Published var selectedCategoryID: String? = nil {
         didSet { updateDisplayCategories() }
     }
+    @Published var expandedCategoryIDs: Set<String> = []
     @Published var lastResult: QuarantineSession?
     @Published var showPermissionAlert = false
     @Published var currentVersion = ""
     @Published var latestVersion: String?
+    @Published var systemStats = SystemStats()
+    @Published var scanProgress: Double = 0
 
     // Scan filtering / sorting
     @Published var scanSearchText = "" {
@@ -50,6 +54,15 @@ final class AppViewModel: ObservableObject {
     @Published var displayInstalledApps: [InstalledApp] = []
     @Published var installedAppSearchText = "" {
         didSet { updateDisplayInstalledApps() }
+    }
+    @Published var selectedInstalledAppIDs: Set<UUID> = []
+
+    var selectedInstalledApps: [InstalledApp] {
+        installedApps.filter { selectedInstalledAppIDs.contains($0.id) }
+    }
+
+    var selectedInstalledAppsSize: UInt64 {
+        selectedInstalledApps.reduce(0) { $0 + $1.size }
     }
 
     enum Tab {
@@ -91,25 +104,40 @@ final class AppViewModel: ObservableObject {
 
     func scan() async {
         isScanning = true
+        scanProgress = 0
         statusMessage = "Scanning your Mac..."
         categories = []
         selectedCategoryID = nil
         scanSearchText = ""
 
-        let result = await ScanEngine.scanAll { [weak self] name in
+        let result = await ScanEngine.scanAll { [weak self] current, total, name in
             Task { @MainActor [weak self] in
                 self?.statusMessage = "Scanning \(name)..."
+                self?.scanProgress = total > 0 ? Double(current) / Double(total) : 0
             }
         }
 
         categories = result
         updateDisplayCategories()
         summary = ScanEngine.summary(from: result)
+        scanProgress = 1
         isScanning = false
         statusMessage = "Scan complete. \(summary.itemCount) items found."
         selectedTab = .scan
 
         await loadQuarantine()
+    }
+
+    func startSystemMonitoring() {
+        Task {
+            await SystemMonitor.shared.startMonitoring(interval: 2.0)
+            for await _ in Timer.publish(every: 2.0, on: .main, in: .common).autoconnect().values {
+                let stats = await SystemMonitor.shared.currentStats()
+                await MainActor.run {
+                    self.systemStats = stats
+                }
+            }
+        }
     }
 
     func toggleCategorySelection(id: String) {
@@ -231,6 +259,40 @@ final class AppViewModel: ObservableObject {
     func loadInstalledApps() async {
         installedApps = InstalledApps.all()
         updateDisplayInstalledApps()
+    }
+
+    func selectInstalledApp(_ id: UUID) {
+        selectedInstalledAppIDs.insert(id)
+    }
+
+    func deselectInstalledApp(_ id: UUID) {
+        selectedInstalledAppIDs.remove(id)
+    }
+
+    func toggleInstalledAppSelection(_ id: UUID) {
+        if selectedInstalledAppIDs.contains(id) {
+            selectedInstalledAppIDs.remove(id)
+        } else {
+            selectedInstalledAppIDs.insert(id)
+        }
+    }
+
+    func selectAllVisibleInstalledApps() {
+        let ids = displayInstalledApps.map { $0.id }
+        selectedInstalledAppIDs.formUnion(ids)
+    }
+
+    func deselectAllInstalledApps() {
+        selectedInstalledAppIDs.removeAll()
+    }
+
+    func uninstallSelectedApps() async {
+        let apps = selectedInstalledApps
+        guard !apps.isEmpty else { return }
+        for app in apps {
+            await uninstallApp(app)
+        }
+        selectedInstalledAppIDs.removeAll()
     }
 
     func uninstallApp(_ app: InstalledApp) async {

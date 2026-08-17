@@ -25,6 +25,9 @@ Built with native Swift + SwiftUI. No Electron, no background daemon, no network
 
 ## Highlights
 
+- **Dark Neon Dashboard** — live system overview with animated gauges, real-time rings for CPU, memory, storage, temperature, fan, and network.
+- **Live System Monitor** — native Mach-based CPU and memory readings, plus real CPU temperature via SMC/HID thermal sensors.
+- **Orbital Scan Animation** — visual feedback while scanning with category progress arcs.
 - **App Residue Scanner** — find leftover files from apps you already uninstalled.
 - **Cache Analyzer** — classify caches by owner and skip running apps.
 - **Temporary Files** — clean abandoned files in `/tmp` and your user temp folder.
@@ -64,9 +67,11 @@ curl -fsSL https://raw.githubusercontent.com/quanvio/quansweep/main/scripts/inst
 
 ### First launch
 
-Because QuanSweep is distributed directly rather than through the Mac App Store, macOS may show a security warning on first launch.
+QuanSweep is distributed directly so you get the latest version immediately. On the first launch, macOS may show a security gate because the app is not yet codesigned with an Apple Developer ID.
 
-**Recommended:** install with the one-line installer above. It removes the quarantine flag automatically.
+**First launch:** right-click `QuanSweep.app` → **Open**, or approve it in **System Settings → Privacy & Security → Open Anyway**.
+
+**Recommended:** install with the one-line installer above. It removes the quarantine flag automatically so the first launch is seamless.
 
 **If you downloaded the zip manually and see “QuanSweep is damaged and can’t be opened”:**
 
@@ -78,6 +83,8 @@ xattr -cr /Applications/QuanSweep.app
 ```
 
 3. Right-click `QuanSweep.app` → **Open**, or go to **System Settings → Privacy & Security → Open Anyway**.
+
+> For a fully seamless install, you can later codesign and notarize QuanSweep with an Apple Developer ID.
 
 **Grant Full Disk Access:**
 
@@ -153,7 +160,8 @@ QuanSweep/
 - [x] V0.5 — Downloads + installer analyzer
 - [x] V0.6 — Large files + duplicate finder
 - [x] V0.7 — AI model analyzer (GGUF, MLX, HuggingFace, Ollama)
-- [ ] V1.0 — Signed and notarized release builds
+- [x] V1.2.0 — Dark neon dashboard redesign, live system monitoring, real thermal readings, animated scanning overlay
+- [ ] V1.3.0 — Signed and notarized release builds
 
 ## Contributing
 
