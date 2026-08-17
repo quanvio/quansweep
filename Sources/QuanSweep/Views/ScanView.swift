@@ -29,8 +29,9 @@ struct ScanView: View {
             Text("No scan yet")
                 .font(.title2.weight(.semibold))
 
-            Text("Start a scan to see what QuanSweep can safely clean.")
+            Text("Start a scan to see what QuanSweep can safely clean.\nNothing is deleted permanently — items are moved to Quarantine first.")
                 .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
 
             Button("Start Scan") {
                 Task { await viewModel.scan() }
@@ -43,6 +44,8 @@ struct ScanView: View {
 
     private var categoryList: some View {
         List {
+            safetyLegend
+
             ForEach($viewModel.categories) { $category in
                 Section {
                     ForEach($category.items) { $item in
@@ -57,6 +60,31 @@ struct ScanView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+    }
+
+    private var safetyLegend: some View {
+        HStack(spacing: 16) {
+            legendDot(color: .green, label: "Safe")
+            legendDot(color: .orange, label: "Review")
+            legendDot(color: .red, label: "Advanced")
+            legendDot(color: .blue, label: "Protected")
+            Spacer()
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets())
+    }
+
+    private func legendDot(color: Color, label: String) -> some View {
+        HStack(spacing: 6) {
+            Circle()
+                .fill(color)
+                .frame(width: 8, height: 8)
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
     }
 
     private var bottomBar: some View {

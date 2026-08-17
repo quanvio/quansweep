@@ -71,23 +71,45 @@ struct ItemDetailView: View {
     }
 
     private var reasonSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Why this score?")
-                .font(.system(size: 13, weight: .semibold))
-
-            Text(item.reason)
-                .font(.system(size: 13))
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-
+        VStack(alignment: .leading, spacing: 12) {
             HStack {
                 SafetyBadge(safety: item.safety)
                 Spacer()
             }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Why this score?")
+                    .font(.system(size: 13, weight: .semibold))
+
+                Text(item.reason)
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Divider()
+
+            Text(actionExplanation)
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(16)
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var actionExplanation: String {
+        switch item.safety {
+        case .safe:
+            return "QuanSweep considers this safe to move to Quarantine. It can be restored at any time from the Quarantine tab."
+        case .review:
+            return "This item looks like leftover data, but QuanSweep is not 100% sure. Review it, reveal it in Finder, then choose Move to Quarantine or Delete Permanently."
+        case .advanced:
+            return "This item may contain user data or belong to an active application. Only advanced users should remove it."
+        case .protected:
+            return "This item is protected. QuanSweep will not move or delete it unless you unlock it."
+        }
     }
 
     private var actionButtons: some View {

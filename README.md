@@ -60,15 +60,28 @@ curl -fsSL https://raw.githubusercontent.com/quanvio/quansweep/main/scripts/inst
 
 Because QuanSweep is distributed directly rather than through the Mac App Store, macOS may show a security warning on first launch.
 
-**If you see “QuanSweep is damaged and can’t be opened”:**
+**Recommended:** install with the one-line installer above. It removes the quarantine flag automatically.
 
-Run this in Terminal to remove the download quarantine flag:
+**If you downloaded the zip manually and see “QuanSweep is damaged and can’t be opened”:**
+
+1. Move `QuanSweep.app` into `/Applications`.
+2. Open Terminal and run:
 
 ```bash
-xattr -dr com.apple.quarantine /Applications/QuanSweep.app
+xattr -cr /Applications/QuanSweep.app
 ```
 
-Then right-click `QuanSweep.app` → **Open**, or approve it in **System Settings → Privacy & Security**.
+3. Right-click `QuanSweep.app` → **Open**, or go to **System Settings → Privacy & Security → Open Anyway**.
+
+**Grant Full Disk Access:**
+
+QuanSweep needs permission to read system and user cache folders:
+
+```bash
+open "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles"
+```
+
+Then add **QuanSweep** to the list.
 
 ## How to use
 

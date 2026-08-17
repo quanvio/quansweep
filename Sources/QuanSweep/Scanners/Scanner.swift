@@ -11,6 +11,10 @@ protocol Scanner {
 }
 
 extension Scanner {
+    func scanWithSafety() async throws -> CleanupCategory {
+        return await scan()
+    }
+
     func makeCategory(items: [CleanupItem]) -> CleanupCategory {
         let selectable = items.map { item -> CleanupItem in
             var copy = item

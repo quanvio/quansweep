@@ -11,7 +11,7 @@ struct CacheScanner: Scanner {
     func scan() async -> CleanupCategory {
         let home = NSHomeDirectory()
         let cachesPath = "\(home)/Library/Caches"
-        let running = runningAppNames()
+        let running = await runningAppNames()
 
         guard FileSystem.fileExists(at: cachesPath) else {
             return makeCategory(items: [])
@@ -50,7 +50,8 @@ struct CacheScanner: Scanner {
         return makeCategory(items: items.sorted { $0.size > $1.size })
     }
 
-    private func runningAppNames() -> Set<String> {
+    @MainActor
+    private func runningAppNames() async -> Set<String> {
         var names: Set<String> = []
         for app in NSWorkspace.shared.runningApplications {
             if let name = app.localizedName?.lowercased() {

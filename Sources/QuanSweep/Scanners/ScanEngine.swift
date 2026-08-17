@@ -17,7 +17,21 @@ enum ScanEngine {
             for scanner in allScanners {
                 group.addTask {
                     progress?(scanner.name)
-                    return await scanner.scan()
+                    do {
+                        return try await scanner.scanWithSafety()
+                    } catch {
+                        return CleanupCategory(
+                            id: scanner.categoryID,
+                            name: scanner.name,
+                            icon: scanner.icon,
+                            safety: scanner.safety,
+                            description: scanner.description,
+                            items: [],
+                            isSelected: false,
+                            isScanning: false,
+                            errorMessage: "Scan failed: \(error.localizedDescription)"
+                        )
+                    }
                 }
             }
             for await category in group {
