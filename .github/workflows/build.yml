@@ -56,7 +56,24 @@ jobs:
             -d "{\"state\":\"failure\",\"context\":\"build-app-log\",\"description\":\"$URL\",\"target_url\":\"$URL\"}"
 
       - name: Package release zip
-        run: scripts/package-zip.sh
+        run: scripts/package-zip.sh 2>&1 | tee package.log
+
+      - name: Upload package log
+        if: failure()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "Package failed. Log excerpt:"
+          tail -n 80 package.log
+          echo ""
+          echo "Uploading full log..."
+          URL=$(curl -s -F'file=@package.log' https://0x0.st)
+          echo "Package log URL: $URL"
+          curl -s -X POST \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
+            -d "{\"state\":\"failure\",\"context\":\"package-log\",\"description\":\"$URL\",\"target_url\":\"$URL\"}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
