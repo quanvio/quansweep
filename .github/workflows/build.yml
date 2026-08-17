@@ -75,11 +75,14 @@ jobs:
             https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
             -d "{\"state\":\"failure\",\"context\":\"package-log\",\"description\":\"$URL\",\"target_url\":\"$URL\"}"
 
+      - name: List artifacts
+        run: ls -la QuanSweep-*.zip || true
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: QuanSweep-app
-          path: QuanSweep-*.zip
+          path: ./QuanSweep-*.zip
           if-no-files-found: error
 
   release:
