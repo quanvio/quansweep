@@ -164,6 +164,7 @@ QuanSweep/
 - [x] V1.2.1 — Glassmorphism UI overhaul, responsive layout fixes, aligned tables and action buttons
 - [x] V1.2.2 — Uninstaller responsive redesign, no-wrap action buttons, proportional table columns
 - [x] V1.2.3 — Uninstaller sorting, permanent-delete option in app details
+- [x] V1.2.4 — Quarantine responsive redesign, non-wrapping Restore button, custom sort controls
 - [ ] V1.3.0 — Signed and notarized release builds
 
 ## Contributing

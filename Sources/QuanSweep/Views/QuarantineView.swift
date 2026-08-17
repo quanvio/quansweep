@@ -19,14 +19,26 @@ struct QuarantineView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
-            header
-                .padding(16)
+        GeometryReader { geo in
+            VStack(spacing: 0) {
+                header
+                    .padding(.horizontal, 20)
+                    .padding(.top, 20)
+                    .padding(.bottom, 16)
 
-            if viewModel.displayQuarantineSessions.isEmpty {
-                emptyState
-            } else {
-                tableView
+                statCards
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 16)
+
+                bulkActions
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 12)
+
+                if viewModel.displayQuarantineSessions.isEmpty {
+                    emptyState
+                } else {
+                    tableContainer(in: geo)
+                }
             }
         }
         .background(AppColors.background)
@@ -63,127 +75,125 @@ struct QuarantineView: View {
         }
     }
 
+    // MARK: - Header
+
     private var header: some View {
-        VStack(spacing: 12) {
-            HStack {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("Quarantine")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(.white)
-                    Text("Securely isolated items. They can't harm your system.")
-                        .font(.system(size: 12))
-                        .foregroundStyle(AppColors.textSecondary)
-                }
-
-                Spacer()
-
+        HStack(spacing: 16) {
+            VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 10) {
-                    HStack(spacing: 6) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 11))
-                            .foregroundStyle(AppColors.textMuted)
-                        TextField("Search quarantine...", text: $viewModel.quarantineSearchText)
-                            .textFieldStyle(.plain)
-                            .foregroundStyle(.white)
-                            .font(.system(size: 12))
-                    }
-                    .padding(8)
-                    .frame(width: 200)
-                    .background(AppColors.cardBackground)
-                    .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.cardBorder, lineWidth: 1))
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    Image(systemName: "arrow.counterclockwise.circle")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(AppColors.accentCyan)
+                        .frame(width: 34, height: 34)
+                        .background(AppColors.accentCyan.opacity(0.10))
+                        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
 
-                    Picker("Sort", selection: $viewModel.quarantineSortOption) {
-                        ForEach(AppViewModel.QuarantineSortOption.allCases) { option in
-                            Text(option.rawValue).tag(option)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    .frame(width: 200)
+                    Text("Quarantine")
+                        .font(.system(size: 22, weight: .bold))
+                        .foregroundStyle(.white)
                 }
+
+                Text("Securely isolated items. They can't harm your system.")
+                    .font(.system(size: 12))
+                    .foregroundStyle(AppColors.textSecondary)
             }
 
-            HStack(spacing: 10) {
-                quarantineStatCard(
-                    icon: "archivebox",
-                    color: AppColors.accentCyan,
-                    value: ByteCountFormatter.string(fromByteCount: Int64(viewModel.totalQuarantineSize), countStyle: .file),
-                    subtitle: "\(allEntries.count) items",
-                    label: "Total Quarantined"
-                )
+            Spacer()
 
-                quarantineStatCard(
-                    icon: "calendar",
-                    color: AppColors.accentGreen,
-                    value: oldestItem?.deletedAt.formatted(date: .abbreviated, time: .omitted) ?? "—",
-                    subtitle: "30 days remaining",
-                    label: "Oldest Item"
-                )
+            HStack(spacing: 12) {
+                HStack(spacing: 6) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 11))
+                        .foregroundStyle(AppColors.textMuted)
+                    TextField("Search quarantine...", text: $viewModel.quarantineSearchText)
+                        .textFieldStyle(.plain)
+                        .foregroundStyle(.white)
+                        .font(.system(size: 12))
+                }
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .frame(width: 200)
+                .background(AppColors.cardBackground)
+                .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.cardBorder, lineWidth: 1))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
 
-                quarantineStatCard(
-                    icon: "doc.text.magnifyingglass",
-                    color: AppColors.accentPurple,
-                    value: largestItem.map { $0.formattedSize } ?? "—",
-                    subtitle: largestItem?.name ?? "—",
-                    label: "Largest Item"
-                )
-
-                quarantineStatCard(
-                    icon: "timer",
-                    color: AppColors.accentOrange,
-                    value: "On",
-                    subtitle: "After 30 days",
-                    label: "Auto Cleanup"
-                )
+                sortButtons
             }
+        }
+    }
 
-            HStack(spacing: 10) {
+    private var sortButtons: some View {
+        HStack(spacing: 0) {
+            ForEach(AppViewModel.QuarantineSortOption.allCases, id: \.self) { option in
                 Button {
-                    viewModel.selectAllVisibleQuarantineEntries()
+                    viewModel.quarantineSortOption = option
                 } label: {
-                    Text("Select All")
+                    Text(option.rawValue)
+                        .font(.system(size: 11, weight: .semibold))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 6)
+                        .foregroundStyle(viewModel.quarantineSortOption == option ? .white : AppColors.textSecondary)
+                        .background(viewModel.quarantineSortOption == option ? AppColors.accentBlue.opacity(0.25) : Color.clear)
                 }
-                .buttonStyle(GlassButtonStyle(color: AppColors.accentBlue, isProminent: false))
-
-                Button {
-                    viewModel.deselectAllQuarantineEntries()
-                } label: {
-                    Text("Deselect")
-                }
-                .buttonStyle(GlassButtonStyle(color: AppColors.accentBlue, isProminent: false))
-
-                Button {
-                    showBulkDeleteConfirmation = true
-                } label: {
-                    Label("Delete Selected", systemImage: "trash")
-                }
-                .buttonStyle(GlassButtonStyle(color: AppColors.accentRed, isProminent: false))
-                .disabled(viewModel.selectedQuarantineEntryIDs.isEmpty)
-
-                Spacer()
-
-                Button {
-                    showEmptyConfirmation = true
-                } label: {
-                    Label("Empty All", systemImage: "trash")
-                }
-                .buttonStyle(GlassButtonStyle(color: AppColors.accentRed, isProminent: false))
+                .buttonStyle(.plain)
             }
+        }
+        .background(AppColors.cardBackground)
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.cardBorder, lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .fixedSize(horizontal: true, vertical: false)
+    }
+
+    // MARK: - Stat Cards
+
+    private var statCards: some View {
+        HStack(spacing: 12) {
+            quarantineStatCard(
+                icon: "archivebox",
+                color: AppColors.accentCyan,
+                value: ByteCountFormatter.string(fromByteCount: Int64(viewModel.totalQuarantineSize), countStyle: .file),
+                subtitle: "\(allEntries.count) items",
+                label: "Total Quarantined"
+            )
+
+            quarantineStatCard(
+                icon: "calendar",
+                color: AppColors.accentGreen,
+                value: oldestItem?.deletedAt.formatted(date: .abbreviated, time: .omitted) ?? "—",
+                subtitle: "30 days remaining",
+                label: "Oldest Item"
+            )
+
+            quarantineStatCard(
+                icon: "doc.text.magnifyingglass",
+                color: AppColors.accentPurple,
+                value: largestItem.map { $0.formattedSize } ?? "—",
+                subtitle: largestItem?.name ?? "—",
+                label: "Largest Item"
+            )
+
+            quarantineStatCard(
+                icon: "timer",
+                color: AppColors.accentOrange,
+                value: "On",
+                subtitle: "After 30 days",
+                label: "Auto Cleanup"
+            )
         }
     }
 
     private func quarantineStatCard(icon: String, color: Color, value: String, subtitle: String, label: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
-                .font(.system(size: 18))
+                .font(.system(size: 20))
                 .foregroundStyle(color)
-                .frame(width: 36, height: 36)
+                .frame(width: 40, height: 40)
                 .background(color.opacity(0.10))
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
 
-            VStack(alignment: .leading, spacing: 1) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(value)
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.system(size: 18, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
                     .lineLimit(1)
                 Text(subtitle)
@@ -194,43 +204,64 @@ struct QuarantineView: View {
                     .captionLabel()
             }
 
-            Spacer()
+            Spacer(minLength: 0)
         }
-        .padding(10)
+        .padding(12)
         .frame(maxWidth: .infinity)
         .glassCard()
     }
 
-    private var emptyState: some View {
-        VStack(spacing: 14) {
-            Image(systemName: "checkmark.seal")
-                .font(.system(size: 48))
-                .foregroundStyle(AppColors.accentGreen)
+    // MARK: - Bulk Actions
 
-            Text("Quarantine is empty")
-                .font(.title2.weight(.semibold))
-                .foregroundStyle(.white)
+    private var bulkActions: some View {
+        HStack(spacing: 10) {
+            Button {
+                viewModel.selectAllVisibleQuarantineEntries()
+            } label: {
+                Text("Select All")
+            }
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentBlue, isProminent: false))
 
-            Text("Cleaned items appear here for 30 days so you can restore them if needed.")
-                .foregroundStyle(AppColors.textSecondary)
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 420)
-                .font(.system(size: 12))
+            Button {
+                viewModel.deselectAllQuarantineEntries()
+            } label: {
+                Text("Deselect")
+            }
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentBlue, isProminent: false))
+
+            Button {
+                showBulkDeleteConfirmation = true
+            } label: {
+                Label("Delete Selected", systemImage: "trash")
+            }
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentRed, isProminent: false))
+            .disabled(viewModel.selectedQuarantineEntryIDs.isEmpty)
+
+            Spacer()
+
+            Button {
+                showEmptyConfirmation = true
+            } label: {
+                Label("Empty All", systemImage: "trash")
+            }
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentRed, isProminent: false))
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    private var tableView: some View {
+    // MARK: - Table
+
+    private func tableContainer(in geo: GeometryProxy) -> some View {
         VStack(spacing: 0) {
-            tableHeader
+            tableHeader(in: geo)
 
             ScrollView {
-                LazyVStack(spacing: 4) {
+                LazyVStack(spacing: 6) {
                     ForEach(viewModel.displayQuarantineSessions) { session in
                         Section {
                             ForEach(session.items) { entry in
                                 QuarantineEntryRow(
                                     entry: entry,
+                                    totalWidth: geo.size.width - 40,
                                     onRestore: {
                                         Task { await viewModel.restore(entry: entry) }
                                     },
@@ -256,24 +287,18 @@ struct QuarantineView: View {
                         }
                     }
                 }
-                .padding(.horizontal, 12)
+                .padding(.horizontal, 20)
                 .padding(.bottom, 12)
             }
 
-            HStack {
-                Text("\(viewModel.selectedQuarantineEntryIDs.count) selected · \(ByteCountFormatter.string(fromByteCount: Int64(viewModel.selectedQuarantineSize), countStyle: .file))")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(AppColors.textSecondary)
-
-                Spacer()
-            }
-            .padding(12)
-            .background(AppColors.cardBackground)
+            bottomBar
         }
     }
 
-    private var tableHeader: some View {
-        HStack(spacing: 10) {
+    private func tableHeader(in geo: GeometryProxy) -> some View {
+        let widths = Self.columnWidths(for: geo.size.width - 40)
+
+        return HStack(spacing: 12) {
             Toggle("", isOn: Binding(
                 get: { allEntries.allSatisfy { viewModel.selectedQuarantineEntryIDs.contains($0.id) } && !allEntries.isEmpty },
                 set: { isOn in
@@ -285,46 +310,111 @@ struct QuarantineView: View {
                 }
             ))
             .toggleStyle(.checkbox)
-            .frame(width: 22)
+            .frame(width: widths.checkbox)
 
             Text("Item Name")
-                .font(.system(size: 9, weight: .bold))
+                .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(AppColors.textMuted)
                 .textCase(.uppercase)
-                .frame(width: 160, alignment: .leading)
+                .frame(width: widths.name, alignment: .leading)
 
             Text("File Path")
-                .font(.system(size: 9, weight: .bold))
+                .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(AppColors.textMuted)
                 .textCase(.uppercase)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             Text("Size")
-                .font(.system(size: 9, weight: .bold))
+                .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(AppColors.textMuted)
                 .textCase(.uppercase)
-                .frame(width: 70, alignment: .trailing)
+                .frame(width: widths.size, alignment: .trailing)
 
             Text("Date Modified")
-                .font(.system(size: 9, weight: .bold))
+                .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(AppColors.textMuted)
                 .textCase(.uppercase)
-                .frame(width: 100, alignment: .leading)
+                .frame(width: widths.date, alignment: .leading)
 
             Text("Actions")
-                .font(.system(size: 9, weight: .bold))
+                .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(AppColors.textMuted)
                 .textCase(.uppercase)
-                .frame(width: 100, alignment: .trailing)
+                .frame(width: widths.actions, alignment: .trailing)
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, 20)
         .padding(.vertical, 8)
-        .background(Color.white.opacity(0.03))
+        .background(Color.white.opacity(0.02))
+    }
+
+    struct ColumnWidths {
+        let checkbox: CGFloat
+        let name: CGFloat
+        let size: CGFloat
+        let date: CGFloat
+        let actions: CGFloat
+    }
+
+    static func columnWidths(for totalWidth: CGFloat) -> ColumnWidths {
+        let minWidth: CGFloat = 800
+        let width = max(totalWidth, minWidth)
+        let checkbox: CGFloat = 24
+        let actions: CGFloat = max(140, width * 0.14)
+        let size: CGFloat = 70
+        let date: CGFloat = max(100, width * 0.12)
+        let name: CGFloat = width * 0.22
+        return ColumnWidths(checkbox: checkbox, name: max(name, 140), size: size, date: date, actions: actions)
+    }
+
+    // MARK: - Empty State
+
+    private var emptyState: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "checkmark.seal")
+                .font(.system(size: 48))
+                .foregroundStyle(AppColors.accentGreen)
+
+            Text("Quarantine is empty")
+                .font(.title2.weight(.semibold))
+                .foregroundStyle(.white)
+
+            Text("Cleaned items appear here for 30 days so you can restore them if needed.")
+                .foregroundStyle(AppColors.textSecondary)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: 420)
+                .font(.system(size: 12))
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+
+    // MARK: - Bottom Bar
+
+    private var bottomBar: some View {
+        HStack(spacing: 14) {
+            Text("\(viewModel.selectedQuarantineEntryIDs.count) selected · \(ByteCountFormatter.string(fromByteCount: Int64(viewModel.selectedQuarantineSize), countStyle: .file))")
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+
+            Spacer()
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+        .background(AppColors.cardBackground)
+        .overlay(
+            Rectangle()
+                .fill(AppColors.divider)
+                .frame(height: 1),
+            alignment: .top
+        )
     }
 }
 
+// MARK: - Quarantine Entry Row
+
 struct QuarantineEntryRow: View {
     let entry: QuarantineEntry
+    let totalWidth: CGFloat
     @EnvironmentObject var viewModel: AppViewModel
     let onRestore: () -> Void
     let onDelete: () -> Void
@@ -337,51 +427,57 @@ struct QuarantineEntryRow: View {
     }
 
     var body: some View {
-        HStack(spacing: 10) {
+        let widths = QuarantineView.columnWidths(for: totalWidth)
+        let safety = safetyFor(entry)
+
+        HStack(spacing: 12) {
             Toggle("", isOn: isSelected)
                 .toggleStyle(.checkbox)
-                .frame(width: 22)
+                .frame(width: widths.checkbox)
 
             HStack(spacing: 8) {
-                Image(systemName: "doc.on.doc")
-                    .font(.system(size: 12))
-                    .foregroundStyle(AppColors.accentCyan)
-                    .frame(width: 26, height: 26)
-                    .background(AppColors.accentCyan.opacity(0.10))
+                Image(systemName: iconFor(entry))
+                    .font(.system(size: 14))
+                    .foregroundStyle(safetyColor(safety))
+                    .frame(width: 28, height: 28)
+                    .background(safetyColor(safety).opacity(0.10))
                     .clipShape(Circle())
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(entry.name)
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.system(size: 12, weight: .semibold))
                         .foregroundStyle(.white)
                         .lineLimit(1)
 
-                    SafetyBadge(safety: safetyFor(entry))
+                    SafetyBadge(safety: safety)
                 }
             }
-            .frame(width: 160, alignment: .leading)
+            .frame(width: widths.name, alignment: .leading)
 
             Text(entry.originalPath)
-                .font(.system(size: 10))
+                .font(.system(size: 11))
                 .foregroundStyle(AppColors.textSecondary)
                 .lineLimit(1)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             Text(entry.formattedSize)
-                .font(.system(size: 10).monospacedDigit())
+                .font(.system(size: 11).monospacedDigit())
                 .foregroundStyle(AppColors.textSecondary)
-                .frame(width: 70, alignment: .trailing)
+                .frame(width: widths.size, alignment: .trailing)
+                .lineLimit(1)
 
             Text(entry.deletedAt, style: .date)
-                .font(.system(size: 10))
+                .font(.system(size: 11))
                 .foregroundStyle(AppColors.textMuted)
-                .frame(width: 100, alignment: .leading)
+                .frame(width: widths.date, alignment: .leading)
+                .lineLimit(1)
 
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 Button("Restore") {
                     onRestore()
                 }
                 .buttonStyle(GlassButtonStyle(color: AppColors.accentGreen, isProminent: false))
+                .fixedSize(horizontal: true, vertical: false)
 
                 Button {
                     onDelete()
@@ -391,13 +487,15 @@ struct QuarantineEntryRow: View {
                 }
                 .buttonStyle(GlassButtonStyle(color: AppColors.accentRed, isProminent: false))
                 .help("Delete permanently")
+                .fixedSize(horizontal: true, vertical: false)
             }
-            .frame(width: 100, alignment: .trailing)
+            .frame(width: widths.actions, alignment: .trailing)
         }
-        .padding(8)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
         .background(AppColors.cardBackground)
-        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(white: 1.0, opacity: 0.05), lineWidth: 1))
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(white: 1.0, opacity: 0.05), lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
     private func safetyFor(_ entry: QuarantineEntry) -> SafetyLevel {
@@ -406,6 +504,31 @@ struct QuarantineEntryRow: View {
         case "logs", "downloads", "xcode", "developer": return .review
         case "large-files", "ai-models": return .advanced
         default: return .review
+        }
+    }
+
+    private func safetyColor(_ safety: SafetyLevel) -> Color {
+        switch safety {
+        case .safe: return AppColors.accentGreen
+        case .review: return AppColors.accentOrange
+        case .advanced: return AppColors.accentRed
+        case .protected: return AppColors.accentBlue
+        }
+    }
+
+    private func iconFor(_ entry: QuarantineEntry) -> String {
+        switch entry.categoryID {
+        case "app-residues": return "app.dashed"
+        case "caches": return "externaldrive.badge.icloud"
+        case "temp": return "folder.badge.gear"
+        case "logs": return "doc.text"
+        case "trash": return "trash"
+        case "xcode": return "hammer"
+        case "developer": return "terminal"
+        case "downloads": return "arrow.down.circle"
+        case "large-files": return "doc.badge.arrow.up"
+        case "ai-models": return "brain"
+        default: return "doc.on.doc"
         }
     }
 }
