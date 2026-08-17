@@ -299,7 +299,7 @@ struct ScanView: View {
                     .padding(.horizontal, 12)
                     .padding(.bottom, 12)
                 }
-                .frame(height: max(tableGeo.size.height - 64, 120))
+                .frame(maxHeight: .infinity)
 
                 bottomBar
             }
