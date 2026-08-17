@@ -24,8 +24,8 @@ struct ScanView: View {
                     .background(AppColors.divider)
 
                 rightPanel(in: geo)
-                    .frame(maxHeight: .infinity, alignment: .top)
             }
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
         }
         .background(AppColors.background)
         .navigationTitle("")
@@ -184,11 +184,11 @@ struct ScanView: View {
 
     private func rightPanel(in geo: GeometryProxy) -> some View {
         let rightWidth = geo.size.width - leftPanelWidth(for: geo.size.width)
-        let tableWidth = max(rightWidth - 64, 240)
+        let tableWidth = max(rightWidth - 72, 240)
 
         return VStack(spacing: 0) {
             rightHeader
-                .padding(.horizontal, 20)
+                .padding(.horizontal, 24)
                 .padding(.top, 18)
                 .padding(.bottom, 12)
 
@@ -196,7 +196,7 @@ struct ScanView: View {
                 emptyState
             } else {
                 tableHeader(totalWidth: tableWidth)
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 24)
 
                 ScrollView {
                     LazyVStack(spacing: 6) {
@@ -210,16 +210,16 @@ struct ScanView: View {
                             )
                         }
                     }
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 24)
                     .padding(.bottom, 12)
                 }
                 .frame(maxHeight: .infinity)
 
                 bottomBar
-                    .padding(.horizontal, 20)
+                    .padding(.horizontal, 24)
             }
         }
-        .frame(maxHeight: .infinity, alignment: .top)
+        .frame(width: rightWidth, height: geo.size.height, alignment: .top)
         .background(AppColors.background)
     }
 
