@@ -3,7 +3,7 @@ import Foundation
 actor QuarantineManager {
     static let shared = QuarantineManager()
 
-    private let quarantineFolder: URL = {
+    let quarantineFolder: URL = {
         let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
         return appSupport.appendingPathComponent("QuanSweep/Quarantine", isDirectory: true)
     }()
@@ -76,6 +76,33 @@ actor QuarantineManager {
             }
         }
         return QuarantineSession(id: session.id, createdAt: session.createdAt, items: restored)
+    }
+
+    func deletePermanently(entry: QuarantineEntry) async -> Bool {
+        let quarantineURL = URL(fileURLWithPath: entry.quarantinePath)
+        do {
+            try FileManager.default.removeItem(at: quarantineURL)
+            await removeEntry(entry)
+            await AuditLogger.shared.log(action: "delete", path: entry.originalPath, size: entry.size, details: "Permanently deleted from quarantine")
+            return true
+        } catch {
+            return false
+        }
+    }
+
+    func emptyQuarantine() async -> UInt64 {
+        let sessions = await loadManifest()
+        var freed: UInt64 = 0
+        for session in sessions {
+            for entry in session.items {
+                try? FileManager.default.removeItem(atPath: entry.quarantinePath)
+                freed += entry.size
+            }
+        }
+        try? FileManager.default.removeItem(at: quarantineFolder)
+        await saveManifest([])
+        await AuditLogger.shared.log(action: "empty", path: quarantineFolder.path, size: freed, details: "Emptied quarantine")
+        return freed
     }
 
     func sessions() async -> [QuarantineSession] {

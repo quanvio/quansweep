@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @StateObject private var viewModel = AppViewModel()
+    @EnvironmentObject var viewModel: AppViewModel
 
     var body: some View {
         NavigationSplitView {
@@ -13,6 +13,7 @@ struct ContentView: View {
         .task {
             await viewModel.loadQuarantine()
             await viewModel.loadVersionInfo()
+            await viewModel.loadInstalledApps()
         }
     }
 
@@ -46,6 +47,9 @@ struct ContentView: View {
             SidebarItem(icon: "arrow.counterclockwise.circle", title: "Quarantine", tab: .quarantine, selected: viewModel.selectedTab)
                 .onTapGesture { viewModel.selectedTab = .quarantine }
 
+            SidebarItem(icon: "app.gift", title: "Uninstaller", tab: .uninstaller, selected: viewModel.selectedTab)
+                .onTapGesture { viewModel.selectedTab = .uninstaller }
+
             Spacer()
 
             if viewModel.isScanning {
@@ -71,35 +75,32 @@ struct ContentView: View {
     }
 
     private var versionFooter: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(spacing: 6) {
-                Text("QuanSweep \(viewModel.currentVersion)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+        HStack(spacing: 0) {
+            Text("v\(viewModel.currentVersion)")
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
 
-                if let latest = viewModel.latestVersion, latest != viewModel.currentVersion {
-                    Button {
-                        VersionChecker.shared.openReleasesPage()
-                    } label: {
-                        HStack(spacing: 2) {
-                            Image(systemName: "arrow.up.circle.fill")
-                            Text("\(latest) available")
-                        }
-                        .font(.caption)
-                    }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(.green)
+            Spacer()
+
+            if let latest = viewModel.latestVersion, latest != viewModel.currentVersion {
+                Button {
+                    VersionChecker.shared.openReleasesPage()
+                } label: {
+                    Text("Update")
+                        .font(.system(size: 11, weight: .semibold))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(Color.green.opacity(0.15))
+                        .foregroundStyle(.green)
+                        .clipShape(Capsule())
                 }
+                .buttonStyle(.plain)
+                .help("Update available: \(latest)")
+            } else {
+                Text("Up to date")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary.opacity(0.7))
             }
-
-            Button {
-                VersionChecker.shared.openReleasesPage()
-            } label: {
-                Text("Check for updates")
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-            .buttonStyle(.plain)
         }
     }
 
@@ -112,6 +113,8 @@ struct ContentView: View {
             ScanView()
         case .quarantine:
             QuarantineView()
+        case .uninstaller:
+            UninstallerView()
         }
     }
 

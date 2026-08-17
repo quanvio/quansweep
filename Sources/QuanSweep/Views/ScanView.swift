@@ -6,7 +6,7 @@ struct ScanView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            if viewModel.categories.isEmpty && !viewModel.isScanning {
+            if viewModel.displayCategories.isEmpty && !viewModel.isScanning {
                 emptyState
             } else {
                 categoryList
@@ -46,7 +46,9 @@ struct ScanView: View {
         List {
             safetyLegend
 
-            ForEach($viewModel.categories) { $category in
+            controls
+
+            ForEach($viewModel.displayCategories) { $category in
                 Section {
                     ForEach($category.items) { $item in
                         ItemRow(item: $item, selectedItem: $selectedItem)
@@ -60,6 +62,55 @@ struct ScanView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+    }
+
+    private var controls: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                HStack(spacing: 6) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    TextField("Search items", text: $viewModel.scanSearchText)
+                        .textFieldStyle(.plain)
+                }
+                .padding(8)
+                .background(.ultraThinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+
+                Picker("Sort", selection: $viewModel.scanSortOption) {
+                    ForEach(AppViewModel.ScanSortOption.allCases) { option in
+                        Text(option.rawValue).tag(option)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .frame(width: 320)
+            }
+
+            if let selectedID = viewModel.selectedCategoryID,
+               let name = viewModel.categories.first(where: { $0.id == selectedID })?.name {
+                HStack(spacing: 8) {
+                    Text("Showing: \(name)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+
+                    Button {
+                        viewModel.selectedCategoryID = nil
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.plain)
+                    .foregroundStyle(.secondary)
+
+                    Spacer()
+                }
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets())
     }
 
     private var safetyLegend: some View {

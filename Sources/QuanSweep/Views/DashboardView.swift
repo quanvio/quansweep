@@ -104,6 +104,7 @@ struct DashboardView: View {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 220))], spacing: 12) {
                 ForEach(viewModel.categories) { category in
                     CategoryMiniCard(category: category) {
+                        viewModel.selectedCategoryID = category.id
                         viewModel.selectedTab = .scan
                     }
                 }

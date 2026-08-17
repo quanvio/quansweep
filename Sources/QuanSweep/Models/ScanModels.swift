@@ -53,6 +53,22 @@ struct CleanupItem: Identifiable, Equatable {
         formatter.unitsStyle = .abbreviated
         return formatter.localizedString(for: modifiedAt, relativeTo: Date())
     }
+
+    static func bySizeDescending(_ lhs: CleanupItem, _ rhs: CleanupItem) -> Bool {
+        lhs.size > rhs.size
+    }
+
+    static func byNameAscending(_ lhs: CleanupItem, _ rhs: CleanupItem) -> Bool {
+        lhs.name.localizedStandardCompare(rhs.name) == .orderedAscending
+    }
+
+    static func byConfidenceDescending(_ lhs: CleanupItem, _ rhs: CleanupItem) -> Bool {
+        lhs.confidence > rhs.confidence
+    }
+
+    static func byDateDescending(_ lhs: CleanupItem, _ rhs: CleanupItem) -> Bool {
+        lhs.modifiedAt > rhs.modifiedAt
+    }
 }
 
 struct CleanupCategory: Identifiable, Equatable {
