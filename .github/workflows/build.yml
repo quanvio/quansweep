@@ -80,13 +80,15 @@ jobs:
         run: echo "version=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' scripts/Info.plist)" >> "$GITHUB_OUTPUT"
 
       - name: List artifacts
-        run: ls -la QuanSweep-*.zip || true
+        run: |
+          ls -la QuanSweep-*.zip || true
+          echo "Version: ${{ steps.version.outputs.version }}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: QuanSweep-app
-          path: QuanSweep-${{ steps.version.outputs.version }}.zip
+          path: QuanSweep-1.2.5.zip
           if-no-files-found: error
 
   release:
