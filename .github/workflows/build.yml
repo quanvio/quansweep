@@ -79,10 +79,10 @@ jobs:
         id: version
         run: echo "version=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' scripts/Info.plist)" >> "$GITHUB_OUTPUT"
 
-      - name: List artifacts
+      - name: Find artifact
         run: |
           echo "Version: ${{ steps.version.outputs.version }}"
-          ls -la QuanSweep-*.zip
+          find . -name 'QuanSweep-*.zip' -type f -ls
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
