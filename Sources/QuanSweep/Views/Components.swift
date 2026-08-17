@@ -235,55 +235,27 @@ struct SpeedometerGauge: View {
     var body: some View {
         GeometryReader { geo in
             let size = min(geo.size.width, geo.size.height)
-            let lineWidth: CGFloat = max(12, size * 0.075)
-            let radius = (size - lineWidth) / 2
+            let outerLine: CGFloat = max(10, size * 0.055)
+            let innerLine: CGFloat = max(5, size * 0.028)
+            let radius = (size - outerLine) / 2
             let center = CGPoint(x: geo.size.width / 2, y: geo.size.height / 2)
 
             ZStack {
-                // Outer soft glow
+                // Outer dark track
                 ArcShape(startAngle: 135, endAngle: 405)
-                    .stroke(
-                        AngularGradient(
-                            colors: [
-                                AppColors.accentGreen.opacity(0.35),
-                                AppColors.accentCyan.opacity(0.45),
-                                AppColors.accentBlue.opacity(0.45),
-                                AppColors.accentPurple.opacity(0.35),
-                                AppColors.accentRed.opacity(0.35)
-                            ],
-                            center: .center,
-                            startAngle: .degrees(135),
-                            endAngle: .degrees(405)
-                        ),
-                        style: StrokeStyle(lineWidth: lineWidth + 10, lineCap: .round)
-                    )
-                    .blur(radius: 8)
+                    .stroke(Color.white.opacity(0.04), style: StrokeStyle(lineWidth: outerLine, lineCap: .round))
 
-                // Background arc
-                ArcShape(startAngle: 135, endAngle: 405)
-                    .stroke(Color.white.opacity(0.05), style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
-
-                // Colored zones with gradient glow
+                // Thin colored zone indicators on the outer track
                 ArcShape(startAngle: 135, endAngle: 225)
-                    .stroke(AppColors.accentGreen, style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
-                    .shadow(color: AppColors.accentGreen.opacity(0.45), radius: 8, x: 0, y: 0)
+                    .stroke(AppColors.accentGreen.opacity(0.55), style: StrokeStyle(lineWidth: outerLine, lineCap: .butt))
 
                 ArcShape(startAngle: 225, endAngle: 315)
-                    .stroke(
-                        LinearGradient(
-                            colors: [AppColors.accentOrange, AppColors.accentYellow],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        ),
-                        style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt)
-                    )
-                    .shadow(color: AppColors.accentOrange.opacity(0.45), radius: 8, x: 0, y: 0)
+                    .stroke(AppColors.accentOrange.opacity(0.55), style: StrokeStyle(lineWidth: outerLine, lineCap: .butt))
 
                 ArcShape(startAngle: 315, endAngle: 405)
-                    .stroke(AppColors.accentRed, style: StrokeStyle(lineWidth: lineWidth, lineCap: .butt))
-                    .shadow(color: AppColors.accentRed.opacity(0.45), radius: 8, x: 0, y: 0)
+                    .stroke(AppColors.accentRed.opacity(0.55), style: StrokeStyle(lineWidth: outerLine, lineCap: .butt))
 
-                // Progress arc (cyan/blue neon)
+                // Inner progress arc (bright neon)
                 ArcShape(startAngle: 135, endAngle: 135 + progress * 270)
                     .stroke(
                         AngularGradient(
@@ -292,16 +264,16 @@ struct SpeedometerGauge: View {
                             startAngle: .degrees(135),
                             endAngle: .degrees(135 + progress * 270)
                         ),
-                        style: StrokeStyle(lineWidth: lineWidth * 0.55, lineCap: .round)
+                        style: StrokeStyle(lineWidth: innerLine, lineCap: .round)
                     )
-                    .shadow(color: AppColors.accentCyan.opacity(0.7), radius: 10, x: 0, y: 0)
+                    .shadow(color: AppColors.accentCyan.opacity(0.75), radius: 8, x: 0, y: 0)
 
-                // Tick marks
-                ForEach(0..<21) { i in
-                    let angle = 135 + Double(i) * (270 / 20)
+                // Tick marks (thin, subtle)
+                ForEach(0..<31) { i in
+                    let angle = 135 + Double(i) * (270 / 30)
                     let isMajor = i % 5 == 0
-                    let inner = radius - lineWidth * (isMajor ? 0.65 : 0.42)
-                    let outer = radius - lineWidth * (isMajor ? 0.88 : 0.58)
+                    let inner = radius - outerLine * 0.35
+                    let outer = radius - outerLine * (isMajor ? 0.62 : 0.48)
                     let innerRad = angle * .pi / 180
                     let outerRad = angle * .pi / 180
 
@@ -315,7 +287,7 @@ struct SpeedometerGauge: View {
                             y: center.y + Darwin.sin(outerRad) * outer
                         ))
                     }
-                    .stroke(Color.white.opacity(isMajor ? 0.35 : 0.12), style: StrokeStyle(lineWidth: isMajor ? 1.8 : 1.0, lineCap: .round))
+                    .stroke(Color.white.opacity(isMajor ? 0.25 : 0.10), style: StrokeStyle(lineWidth: isMajor ? 1.2 : 0.7, lineCap: .round))
                 }
 
                 // Scale labels
@@ -324,20 +296,20 @@ struct SpeedometerGauge: View {
                         let t = Double(label) / 100.0
                         let angle = 135 + t * 270
                         let rad = angle * .pi / 180
-                        let labelRadius = radius - lineWidth * 1.35
+                        let labelRadius = radius - outerLine * 0.95
                         let x = center.x + Darwin.cos(rad) * labelRadius
                         let y = center.y + Darwin.sin(rad) * labelRadius
 
                         Text("\(label)")
-                            .font(.system(size: max(9, size * 0.05), weight: .bold))
-                            .foregroundStyle(AppColors.textMuted)
+                            .font(.system(size: max(8, size * 0.038), weight: .bold))
+                            .foregroundStyle(AppColors.textMuted.opacity(0.8))
                             .position(x: x, y: y)
                     }
                 }
 
                 // Needle with glow
                 let needleAngle = 135 + progress * 270
-                NeedleShape(angle: needleAngle, length: radius * 0.82, width: max(5, size * 0.025))
+                NeedleShape(angle: needleAngle, length: radius * 0.78, width: max(4, size * 0.018))
                     .fill(
                         LinearGradient(
                             colors: [AppColors.accentCyan, .white],
@@ -345,7 +317,7 @@ struct SpeedometerGauge: View {
                             endPoint: .trailing
                         )
                     )
-                    .shadow(color: AppColors.accentCyan.opacity(0.8), radius: 8, x: 0, y: 0)
+                    .shadow(color: AppColors.accentCyan.opacity(0.8), radius: 6, x: 0, y: 0)
 
                 // Needle cap
                 Circle()
@@ -354,43 +326,68 @@ struct SpeedometerGauge: View {
                             colors: [.white, AppColors.accentCyan, AppColors.background],
                             center: .center,
                             startRadius: 0,
-                            endRadius: max(10, size * 0.05)
+                            endRadius: max(8, size * 0.04)
                         )
                     )
-                    .frame(width: max(16, size * 0.08), height: max(16, size * 0.08))
-                    .overlay(Circle().stroke(AppColors.accentCyan.opacity(0.8), lineWidth: 2))
-                    .shadow(color: AppColors.accentCyan.opacity(0.6), radius: 6, x: 0, y: 0)
+                    .frame(width: max(14, size * 0.06), height: max(14, size * 0.06))
+                    .overlay(Circle().stroke(AppColors.accentCyan.opacity(0.8), lineWidth: 1.5))
+                    .shadow(color: AppColors.accentCyan.opacity(0.6), radius: 4, x: 0, y: 0)
 
                 // Center text
-                VStack(spacing: 2) {
+                VStack(spacing: 3) {
                     Text(title)
-                        .font(.system(size: max(8, size * 0.045), weight: .bold))
+                        .font(.system(size: max(8, size * 0.04), weight: .bold))
                         .foregroundStyle(AppColors.textMuted)
                         .textCase(.uppercase)
 
-                    Text(formattedValue)
-                        .font(.system(size: max(26, size * 0.21), weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                        .shadow(color: .white.opacity(0.15), radius: 8, x: 0, y: 0)
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        Text(valueNumber)
+                            .font(.system(size: max(28, size * 0.18), weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.6)
+
+                        Text(valueUnit)
+                            .font(.system(size: max(12, size * 0.07), weight: .semibold))
+                            .foregroundStyle(AppColors.textSecondary)
+                            .lineLimit(1)
+                    }
+                    .shadow(color: .white.opacity(0.10), radius: 6, x: 0, y: 0)
 
                     Text(subtitle)
-                        .font(.system(size: max(9, size * 0.045), weight: .semibold))
+                        .font(.system(size: max(9, size * 0.04), weight: .semibold))
                         .foregroundStyle(AppColors.accentCyan)
                         .lineLimit(1)
                 }
-                .offset(y: size * 0.08)
+                .offset(y: size * 0.06)
             }
         }
         .aspectRatio(1.25, contentMode: .fit)
     }
 
-    private var formattedValue: String {
+    private var valueNumber: String {
         if maxValue == 100 {
-            return "\(Int(value))%"
+            return "\(Int(value))"
         } else {
-            return ByteCountFormatter.string(fromByteCount: Int64(value), countStyle: .file)
+            let formatted = ByteCountFormatter.string(fromByteCount: Int64(value), countStyle: .file)
+            let components = formatted.split(separator: " ")
+            if components.count > 1 {
+                return String(components.dropLast().joined(separator: " "))
+            }
+            return formatted
+        }
+    }
+
+    private var valueUnit: String {
+        if maxValue == 100 {
+            return "%"
+        } else {
+            let formatted = ByteCountFormatter.string(fromByteCount: Int64(value), countStyle: .file)
+            let components = formatted.split(separator: " ")
+            if components.count > 1, let last = components.last {
+                return String(last)
+            }
+            return ""
         }
     }
 }

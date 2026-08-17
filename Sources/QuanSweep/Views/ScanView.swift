@@ -18,7 +18,7 @@ struct ScanView: View {
         GeometryReader { geo in
             HStack(spacing: 0) {
                 leftPanel
-                    .frame(width: min(max(320, geo.size.width * 0.30), 380))
+                    .frame(width: leftPanelWidth(for: geo.size.width))
 
                 Divider()
                     .background(AppColors.divider)
@@ -187,6 +187,7 @@ struct ScanView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
                 .padding(.bottom, 14)
+                .frame(height: 80)
 
             if viewModel.displayCategories.isEmpty && !viewModel.isScanning {
                 emptyState
@@ -197,57 +198,99 @@ struct ScanView: View {
         .background(AppColors.background)
     }
 
+    private func leftPanelWidth(for total: CGFloat) -> CGFloat {
+        min(max(280, total * 0.28), 340)
+    }
+
     private var rightHeader: some View {
-        HStack(spacing: 14) {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 10) {
-                    Image(systemName: "magnifyingglass.circle")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(AppColors.accentCyan)
-                        .frame(width: 34, height: 34)
-                        .background(AppColors.accentCyan.opacity(0.10))
-                        .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+        GeometryReader { geo in
+            let isCompact = geo.size.width < 620
 
-                    Text("Scan Results")
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(.white)
+            Group {
+                if isCompact {
+                    VStack(alignment: .leading, spacing: 12) {
+                        headerTitle
+
+                        HStack(spacing: 10) {
+                            searchField
+                                .frame(maxWidth: .infinity)
+
+                            sortButtons
+
+                            Button {
+                                showNewScanConfirmation = true
+                            } label: {
+                                Label("", systemImage: "arrow.clockwise")
+                            }
+                            .buttonStyle(GlassButtonStyle(color: AppColors.accentCyan, isProminent: false))
+                            .fixedSize(horizontal: true, vertical: false)
+                            .help("New Scan")
+                        }
+                    }
+                } else {
+                    HStack(spacing: 14) {
+                        headerTitle
+
+                        Spacer(minLength: 0)
+
+                        HStack(spacing: 12) {
+                            searchField
+                                .frame(width: 200)
+
+                            sortButtons
+
+                            Button {
+                                showNewScanConfirmation = true
+                            } label: {
+                                Label("New Scan", systemImage: "arrow.clockwise")
+                            }
+                            .buttonStyle(GlassButtonStyle(color: AppColors.accentCyan, isProminent: false))
+                            .fixedSize(horizontal: true, vertical: false)
+                        }
+                    }
                 }
-
-                Text("Smart Scan found items that can be safely quarantined.")
-                    .font(.system(size: 12))
-                    .foregroundStyle(AppColors.textSecondary)
             }
-
-            Spacer()
-
-            HStack(spacing: 12) {
-                HStack(spacing: 6) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 11))
-                        .foregroundStyle(AppColors.textMuted)
-                    TextField("Search items...", text: $viewModel.scanSearchText)
-                        .textFieldStyle(.plain)
-                        .foregroundStyle(.white)
-                        .font(.system(size: 12))
-                }
-                .padding(.horizontal, 10)
-                .padding(.vertical, 7)
-                .frame(width: 200)
-                .background(AppColors.cardBackground)
-                .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.cardBorder, lineWidth: 1))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
-
-                sortButtons
-
-                Button {
-                    showNewScanConfirmation = true
-                } label: {
-                    Label("New Scan", systemImage: "arrow.clockwise")
-                }
-                .buttonStyle(GlassButtonStyle(color: AppColors.accentCyan, isProminent: false))
-                .fixedSize(horizontal: true, vertical: false)
-            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         }
+    }
+
+    private var headerTitle: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass.circle")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(AppColors.accentCyan)
+                    .frame(width: 34, height: 34)
+                    .background(AppColors.accentCyan.opacity(0.10))
+                    .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+
+                Text("Scan Results")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+
+            Text("Smart Scan found items that can be safely quarantined.")
+                .font(.system(size: 12))
+                .foregroundStyle(AppColors.textSecondary)
+                .lineLimit(1)
+        }
+    }
+
+    private var searchField: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 11))
+                .foregroundStyle(AppColors.textMuted)
+            TextField("Search items...", text: $viewModel.scanSearchText)
+                .textFieldStyle(.plain)
+                .foregroundStyle(.white)
+                .font(.system(size: 12))
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(AppColors.cardBackground)
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(AppColors.cardBorder, lineWidth: 1))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
     }
 
     private var sortButtons: some View {
@@ -275,31 +318,37 @@ struct ScanView: View {
     // MARK: - Table
 
     private func tableContainer(in geo: GeometryProxy) -> some View {
-        VStack(spacing: 0) {
-            tableHeader(in: geo)
+        let rightWidth = geo.size.width - leftPanelWidth(for: geo.size.width)
+        let tableWidth = max(rightWidth - 40, 640)
 
-            ScrollView {
-                LazyVStack(spacing: 6) {
-                    ForEach($viewModel.displayCategories) { $category in
-                        ScanCategorySection(
-                            category: $category,
-                            totalWidth: geo.size.width - min(max(320, geo.size.width * 0.30), 380) - 40,
-                            onSelectItem: { item in
-                                selectedItem = item
-                            }
-                        )
+        return ScrollView(.horizontal, showsIndicators: true) {
+            VStack(spacing: 0) {
+                tableHeader(totalWidth: tableWidth)
+
+                ScrollView {
+                    LazyVStack(spacing: 6) {
+                        ForEach($viewModel.displayCategories) { $category in
+                            ScanCategorySection(
+                                category: $category,
+                                totalWidth: tableWidth,
+                                onSelectItem: { item in
+                                    selectedItem = item
+                                }
+                            )
+                        }
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 12)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 12)
-            }
 
-            bottomBar
+                bottomBar
+            }
+            .frame(minWidth: rightWidth)
         }
     }
 
-    private func tableHeader(in geo: GeometryProxy) -> some View {
-        let widths = Self.columnWidths(for: geo.size.width - min(max(320, geo.size.width * 0.30), 380) - 40)
+    private func tableHeader(totalWidth: CGFloat) -> some View {
+        let widths = Self.columnWidths(for: totalWidth)
 
         return HStack(spacing: 12) {
             Toggle("", isOn: Binding(
@@ -379,71 +428,78 @@ struct ScanView: View {
     // MARK: - Empty State
 
     private var emptyState: some View {
-        VStack(spacing: 0) {
-            Spacer()
+        GeometryReader { geo in
+            let isCompact = geo.size.width < 360
 
-            ZStack {
-                Circle()
-                    .fill(AppColors.accentCyan.opacity(0.08))
-                    .frame(width: 140, height: 140)
-                    .blur(radius: 20)
+            ScrollView {
+                VStack(spacing: 0) {
+                    Spacer(minLength: 40)
 
-                Image(systemName: "magnifyingglass.circle")
-                    .font(.system(size: 64, weight: .light))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [AppColors.accentCyan, AppColors.accentBlue],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                    ZStack {
+                        Circle()
+                            .fill(AppColors.accentCyan.opacity(0.08))
+                            .frame(width: isCompact ? 110 : 140, height: isCompact ? 110 : 140)
+                            .blur(radius: 20)
+
+                        Image(systemName: "magnifyingglass.circle")
+                            .font(.system(size: isCompact ? 48 : 64, weight: .light))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [AppColors.accentCyan, AppColors.accentBlue],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .shadow(color: AppColors.accentCyan.opacity(0.5), radius: 18, x: 0, y: 0)
+                    }
+                    .padding(.bottom, 24)
+
+                    Text("No scan yet")
+                        .font(.system(size: isCompact ? 18 : 22, weight: .bold))
+                        .foregroundStyle(.white)
+                        .padding(.bottom, 6)
+
+                    Text("Start a scan to see what QuanSweep can safely clean. Nothing is deleted permanently — items are moved to Quarantine first.")
+                        .font(.system(size: 13))
+                        .foregroundStyle(AppColors.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .lineSpacing(3)
+                        .frame(maxWidth: min(460, geo.size.width - 40))
+                        .padding(.bottom, 28)
+
+                    Button {
+                        Task { await viewModel.scan() }
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "sparkles")
+                                .font(.system(size: 13, weight: .semibold))
+                            Text("Start Smart Scan")
+                                .font(.system(size: 13, weight: .semibold))
+                        }
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 10)
+                        .background(
+                            LinearGradient(
+                                colors: [AppColors.accentCyan.opacity(0.18), AppColors.accentBlue.opacity(0.12)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
                         )
-                    )
-                    .shadow(color: AppColors.accentCyan.opacity(0.5), radius: 18, x: 0, y: 0)
-            }
-            .padding(.bottom, 24)
+                        .foregroundStyle(AppColors.accentCyan)
+                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                .stroke(AppColors.accentCyan.opacity(0.45), lineWidth: 1)
+                        )
+                    }
+                    .buttonStyle(.plain)
 
-            Text("No scan yet")
-                .font(.system(size: 22, weight: .bold))
-                .foregroundStyle(.white)
-                .padding(.bottom, 6)
-
-            Text("Start a scan to see what QuanSweep can safely clean.\nNothing is deleted permanently — items are moved to Quarantine first.")
-                .font(.system(size: 13))
-                .foregroundStyle(AppColors.textSecondary)
-                .multilineTextAlignment(.center)
-                .lineSpacing(3)
-                .frame(maxWidth: 460)
-                .padding(.bottom, 28)
-
-            Button {
-                Task { await viewModel.scan() }
-            } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "sparkles")
-                        .font(.system(size: 13, weight: .semibold))
-                    Text("Start Smart Scan")
-                        .font(.system(size: 13, weight: .semibold))
+                    Spacer(minLength: 40)
                 }
+                .frame(minWidth: geo.size.width, minHeight: geo.size.height)
                 .padding(.horizontal, 20)
-                .padding(.vertical, 10)
-                .background(
-                    LinearGradient(
-                        colors: [AppColors.accentCyan.opacity(0.18), AppColors.accentBlue.opacity(0.12)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
-                .foregroundStyle(AppColors.accentCyan)
-                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .stroke(AppColors.accentCyan.opacity(0.45), lineWidth: 1)
-                )
             }
-            .buttonStyle(.plain)
-
-            Spacer()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
     // MARK: - Bottom Bar

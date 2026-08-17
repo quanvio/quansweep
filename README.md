@@ -167,6 +167,7 @@ QuanSweep/
 - [x] V1.2.4 — Quarantine responsive redesign, non-wrapping Restore button, custom sort controls
 - [x] V1.2.5 — Scan Results speedometer gauge, responsive redesign, custom sort, Review Selected sheet
 - [x] V1.2.6 — Neon speedometer polish, professional Scan Results empty/list states with real file icons, redesigned Dashboard with system rings and live activity, accurate CPU/memory/thermal/network monitoring
+- [x] V1.2.7 — Responsive Scan Results right panel, refined speedometer fonts/ticks
 - [ ] V1.3.0 — Signed and notarized release builds
 
 ## Contributing
