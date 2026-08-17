@@ -41,6 +41,11 @@ enum ProtectionList {
 
     /// Returns true if the path is protected and must not be scanned for cleanup.
     static func isProtected(_ path: String) -> Bool {
+        isSystemProtected(path) || isUserCriticalProtected(path)
+    }
+
+    /// Returns true for system paths that must never be touched.
+    static func isSystemProtected(_ path: String) -> Bool {
         let resolved = (path as NSString).standardizingPath
 
         for protected in systemPaths {
@@ -48,6 +53,13 @@ enum ProtectionList {
                 return true
             }
         }
+
+        return false
+    }
+
+    /// Returns true for user-critical paths (Documents, Photos, Mail, etc.).
+    static func isUserCriticalProtected(_ path: String) -> Bool {
+        let resolved = (path as NSString).standardizingPath
 
         for protected in userCriticalPaths {
             if resolved == protected || resolved.hasPrefix(protected + "/") {

@@ -51,18 +51,23 @@ struct DashboardView: View {
                 .disabled(viewModel.isScanning)
 
                 Button(action: {
-                    Task { await viewModel.cleanAllSafe() }
+                    Task {
+                        if viewModel.categories.isEmpty {
+                            await viewModel.scan()
+                        }
+                        viewModel.selectedTab = .scan
+                    }
                 }) {
                     HStack(spacing: 8) {
-                        Image(systemName: "wand.and.stars")
-                        Text("Clean All Safe")
+                        Image(systemName: "eye")
+                        Text("Review Safe Items")
                     }
                     .font(.system(size: 15, weight: .semibold))
                     .padding(.horizontal, 24)
                     .padding(.vertical, 12)
                 }
                 .buttonStyle(.bordered)
-                .disabled(viewModel.summary.safeToClean == 0 || viewModel.isScanning)
+                .disabled(viewModel.isScanning)
             }
             .padding(.top, 8)
         }

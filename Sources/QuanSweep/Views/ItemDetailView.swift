@@ -167,6 +167,8 @@ struct ItemDetailView: View {
         case "xcode": return "hammer.fill"
         case "developer": return "hammer.circle.fill"
         case "downloads": return "arrow.down.circle.fill"
+        case "largeFiles": return "doc.text.magnifyingglass"
+        case "aiModels": return "brain"
         default: return "doc"
         }
     }
