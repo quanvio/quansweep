@@ -85,7 +85,7 @@ jobs:
           find . -name 'QuanSweep-*.zip' -type f -ls
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v3
         with:
           name: QuanSweep-app
           path: QuanSweep-*.zip
@@ -100,7 +100,7 @@ jobs:
       contents: write
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: QuanSweep-app
 
