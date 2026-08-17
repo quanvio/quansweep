@@ -184,6 +184,7 @@ struct ScanView: View {
     private func rightPanel(in geo: GeometryProxy) -> some View {
         VStack(spacing: 0) {
             rightHeader
+                .padding(.horizontal, 16)
                 .padding(.top, 18)
                 .padding(.bottom, 12)
 
@@ -191,10 +192,8 @@ struct ScanView: View {
                 emptyState
             } else {
                 tableContainer(in: geo)
-                    .frame(maxHeight: .infinity)
             }
         }
-        .padding(.horizontal, 12)
         .background(AppColors.background)
     }
 
@@ -277,33 +276,29 @@ struct ScanView: View {
 
     private func tableContainer(in geo: GeometryProxy) -> some View {
         let rightWidth = geo.size.width - leftPanelWidth(for: geo.size.width)
-        let tableWidth = max(rightWidth - 72, 260)
+        let tableWidth = max(rightWidth - 56, 240)
 
-        return GeometryReader { tableGeo in
-            VStack(spacing: 0) {
-                tableHeader(totalWidth: tableWidth)
-                    .padding(.horizontal, 12)
+        return VStack(spacing: 0) {
+            tableHeader(totalWidth: tableWidth)
 
-                ScrollView {
-                    LazyVStack(spacing: 6) {
-                        ForEach($viewModel.displayCategories) { $category in
-                            ScanCategorySection(
-                                category: $category,
-                                totalWidth: tableWidth,
-                                onSelectItem: { item in
-                                    selectedItem = item
-                                }
-                            )
-                        }
+            ScrollView {
+                LazyVStack(spacing: 6) {
+                    ForEach($viewModel.displayCategories) { $category in
+                        ScanCategorySection(
+                            category: $category,
+                            totalWidth: tableWidth,
+                            onSelectItem: { item in
+                                selectedItem = item
+                            }
+                        )
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 12)
                 }
-                .frame(maxHeight: .infinity)
-
-                bottomBar
+                .padding(.bottom, 12)
             }
+
+            bottomBar
         }
+        .padding(.horizontal, 16)
     }
 
     private func tableHeader(totalWidth: CGFloat) -> some View {
@@ -465,18 +460,6 @@ struct ScanView: View {
 
     private var bottomBar: some View {
         HStack(spacing: 14) {
-            HStack(spacing: 5) {
-                Text("\(viewModel.selectedScanItemIDs.count)")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(AppColors.accentCyan)
-                Text("Selected · \(ByteCountFormatter.string(fromByteCount: Int64(viewModel.totalSelectedSize), countStyle: .file))")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.white)
-            }
-            .lineLimit(1)
-
-            Spacer()
-
             Button {
                 showReviewSheet = true
             } label: {
@@ -495,6 +478,18 @@ struct ScanView: View {
             }
             .buttonStyle(GlassButtonStyle(color: AppColors.accentCyan))
             .disabled(viewModel.totalSelectedSize == 0 || viewModel.isScanning)
+
+            Spacer()
+
+            HStack(spacing: 5) {
+                Text("\(viewModel.selectedScanItemIDs.count)")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(AppColors.accentCyan)
+                Text("Selected · \(ByteCountFormatter.string(fromByteCount: Int64(viewModel.totalSelectedSize), countStyle: .file))")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.white)
+            }
+            .lineLimit(1)
         }
         .padding(.vertical, 12)
         .background(AppColors.cardBackground)
