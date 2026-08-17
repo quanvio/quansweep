@@ -16,64 +16,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build Swift package
-        run: swift build 2>&1 | tee build.log
-
-      - name: Upload build log
-        if: failure()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Build failed. Log excerpt:"
-          tail -n 100 build.log
-          echo ""
-          echo "Uploading full log..."
-          URL=$(curl -s -F'file=@build.log' https://0x0.st)
-          echo "Build log URL: $URL"
-          curl -s -X POST \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
-            -d "{\"state\":\"failure\",\"context\":\"build-log\",\"description\":\"$URL\",\"target_url\":\"$URL\"}"
+        run: swift build
 
       - name: Build .app bundle
-        run: scripts/build-app.sh 2>&1 | tee build-app.log
-
-      - name: Upload build-app log
-        if: failure()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Build app failed. Log excerpt:"
-          tail -n 120 build-app.log
-          echo ""
-          echo "Uploading full log..."
-          URL=$(curl -s -F'file=@build-app.log' https://0x0.st)
-          echo "Build app log URL: $URL"
-          curl -s -X POST \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
-            -d "{\"state\":\"failure\",\"context\":\"build-app-log\",\"description\":\"$URL\",\"target_url\":\"$URL\"}"
-
-      - name: Package release zip
-        run: scripts/package-zip.sh 2>&1 | tee package.log
-
-      - name: Upload package log
-        if: failure()
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo "Package failed. Log excerpt:"
-          tail -n 80 package.log
-          echo ""
-          echo "Uploading full log..."
-          URL=$(curl -s -F'file=@package.log' https://0x0.st)
-          echo "Package log URL: $URL"
-          curl -s -X POST \
-            -H "Authorization: token $GITHUB_TOKEN" \
-            -H "Accept: application/vnd.github+json" \
-            https://api.github.com/repos/${{ github.repository }}/statuses/${{ github.sha }} \
-            -d "{\"state\":\"failure\",\"context\":\"package-log\",\"description\":\"$URL\",\"target_url\":\"$URL\"}"
+        run: scripts/build-app.sh
 
       - name: Get version
         id: version
@@ -85,9 +31,7 @@ jobs:
           find . -maxdepth 1 -type d -name 'QuanSweep*.app' -ls
 
       - name: Create artifact tarball
-        run: |
-          tar -czvf QuanSweep-app.tar.gz QuanSweep.app 2>&1 | tail -50
-          ls -la QuanSweep-app.tar.gz
+        run: tar -czf QuanSweep-app.tar.gz QuanSweep.app
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
