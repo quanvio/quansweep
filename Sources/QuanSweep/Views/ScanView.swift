@@ -194,6 +194,7 @@ struct ScanView: View {
                 tableContainer(in: geo)
             }
         }
+        .frame(maxHeight: .infinity, alignment: .top)
         .background(AppColors.background)
     }
 
@@ -298,6 +299,7 @@ struct ScanView: View {
 
             bottomBar
         }
+        .frame(maxHeight: .infinity, alignment: .top)
         .padding(.horizontal, 16)
     }
 

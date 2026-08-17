@@ -174,6 +174,7 @@ QuanSweep/
 - [x] V1.2.11 — Reflow Scan Results right panel with proper edge gaps, smaller speedometer fonts/tick labels, remove duplicate percentage in scanning overlay
 - [x] V1.2.12 — Fix Scan Results bottom bar getting pushed below the fold; scanning overlay percentage deduplication shipped in v1.2.11
 - [x] V1.2.13 — Rebuild Scan Results right panel like Quarantine/Uninstaller: no inner GeometryReader, consistent 16 pt insets, actions moved to left in bottom bar
+- [x] V1.2.14 — Force Scan Results right panel and table to fill full height from the top, removing the empty gap above the table header
 - [ ] V1.3.0 — Signed and notarized release builds
 
 ## Contributing
