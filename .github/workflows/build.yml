@@ -83,12 +83,13 @@ jobs:
         run: |
           echo "Version: ${{ steps.version.outputs.version }}"
           find . -name 'QuanSweep-*.zip' -type f -ls
+          ls -la QuanSweep.app
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: QuanSweep-app
-          path: QuanSweep-*.zip
+          path: QuanSweep.app
           if-no-files-found: error
 
   release:
@@ -100,9 +101,22 @@ jobs:
       contents: write
     steps:
       - name: Download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: QuanSweep-app
+
+      - name: Create release zip
+        run: |
+          VERSION=$(/usr/libexec/PlistBuddy -c 'Print CFBundleShortVersionString' QuanSweep.app/Contents/Info.plist)
+          CLEAN_DIR=$(mktemp -d)
+          cp -R QuanSweep.app "$CLEAN_DIR/QuanSweep.app"
+          xattr -cr "$CLEAN_DIR/QuanSweep.app"
+          find "$CLEAN_DIR/QuanSweep.app" -name '.DS_Store' -delete
+          find "$CLEAN_DIR/QuanSweep.app" -name '._*' -delete
+          cd "$CLEAN_DIR"
+          zip -r -X "$GITHUB_WORKSPACE/QuanSweep-${VERSION}.zip" QuanSweep.app
+          cd "$GITHUB_WORKSPACE"
+          ls -la QuanSweep-*.zip
 
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v2
