@@ -81,24 +81,14 @@ jobs:
 
       - name: List artifacts
         run: |
-          ls -la QuanSweep-*.zip || true
           echo "Version: ${{ steps.version.outputs.version }}"
-
-      - name: Test upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-artifact
-          path: scripts/Info.plist
-          if-no-files-found: error
-
-      - name: Copy artifact
-        run: cp QuanSweep-1.2.5.zip QuanSweep-app-1.2.5.zip
+          ls -la QuanSweep-*.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: QuanSweep-app
-          path: QuanSweep-app-1.2.5.zip
+          path: QuanSweep-*.zip
           if-no-files-found: error
 
   release:
