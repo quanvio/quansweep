@@ -16,7 +16,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build Swift package
-        run: swift build
+        run: |
+          swift build 2>&1 | tee build.log
+          STATUS=${PIPESTATUS[0]}
+          if [ $STATUS -ne 0 ]; then
+            echo "swift build failed with exit code $STATUS"
+            tail -n 80 build.log
+            exit $STATUS
+          fi
 
       - name: Build .app bundle
         run: scripts/build-app.sh
