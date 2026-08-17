@@ -84,11 +84,14 @@ jobs:
           echo "Version: ${{ steps.version.outputs.version }}"
           find . -maxdepth 1 -type d -name 'QuanSweep*.app' -ls
 
+      - name: Create artifact tarball
+        run: tar -czf QuanSweep-app.tar.gz QuanSweep.app
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: QuanSweep-app
-          path: QuanSweep.app
+          path: QuanSweep-app.tar.gz
           if-no-files-found: error
 
   release:
@@ -103,6 +106,9 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: QuanSweep-app
+
+      - name: Extract artifact
+        run: tar -xzf QuanSweep-app.tar.gz
 
       - name: Create release zip
         run: |
