@@ -4,7 +4,6 @@ struct UninstallerView: View {
     @EnvironmentObject var viewModel: AppViewModel
     @State private var selectedApp: InstalledApp?
     @State private var showUninstallConfirmation = false
-    @State private var sortOption: AppViewModel.ScanSortOption = .name
 
     private var totalSize: UInt64 {
         viewModel.displayInstalledApps.reduce(0) { $0 + $1.size }
@@ -109,14 +108,14 @@ struct UninstallerView: View {
         HStack(spacing: 0) {
             ForEach([AppViewModel.ScanSortOption.date, .size, .name], id: \.self) { option in
                 Button {
-                    sortOption = option
+                    viewModel.installedAppSortOption = option
                 } label: {
                     Text(option.rawValue)
                         .font(.system(size: 11, weight: .semibold))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 6)
-                        .foregroundStyle(sortOption == option ? .white : AppColors.textSecondary)
-                        .background(sortOption == option ? AppColors.accentBlue.opacity(0.25) : Color.clear)
+                        .foregroundStyle(viewModel.installedAppSortOption == option ? .white : AppColors.textSecondary)
+                        .background(viewModel.installedAppSortOption == option ? AppColors.accentBlue.opacity(0.25) : Color.clear)
                 }
                 .buttonStyle(.plain)
             }
@@ -459,6 +458,7 @@ struct AppDetailSheet: View {
     @EnvironmentObject var viewModel: AppViewModel
     @Environment(\.dismiss) private var dismiss
     @State private var residuePaths: [String] = []
+    @State private var showDeleteConfirmation = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -477,6 +477,17 @@ struct AppDetailSheet: View {
         .background(AppColors.background)
         .task {
             residuePaths = InstalledApps.relatedResiduePaths(for: app)
+        }
+        .alert("Delete permanently?", isPresented: $showDeleteConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete Permanently", role: .destructive) {
+                Task {
+                    await viewModel.deleteAppPermanently(app)
+                    dismiss()
+                }
+            }
+        } message: {
+            Text("This will permanently delete \(app.name) and its related files. This cannot be undone.")
         }
     }
 
@@ -567,25 +578,35 @@ struct AppDetailSheet: View {
     }
 
     private var actionButtons: some View {
-        HStack(spacing: 10) {
-            Button {
-                NSWorkspace.shared.selectFile(app.path, inFileViewerRootedAtPath: "")
-            } label: {
-                Label("Show in Finder", systemImage: "folder")
-                    .frame(maxWidth: .infinity)
+        VStack(spacing: 10) {
+            HStack(spacing: 10) {
+                Button {
+                    NSWorkspace.shared.selectFile(app.path, inFileViewerRootedAtPath: "")
+                } label: {
+                    Label("Show in Finder", systemImage: "folder")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(GlassButtonStyle(color: AppColors.accentBlue, isProminent: false))
+
+                Button {
+                    Task {
+                        await viewModel.uninstallApp(app)
+                        dismiss()
+                    }
+                } label: {
+                    Label("Uninstall + Quarantine", systemImage: "trash")
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(GlassButtonStyle(color: AppColors.accentRed))
             }
-            .buttonStyle(GlassButtonStyle(color: AppColors.accentBlue, isProminent: false))
 
             Button {
-                Task {
-                    await viewModel.uninstallApp(app)
-                    dismiss()
-                }
+                showDeleteConfirmation = true
             } label: {
-                Label("Uninstall + Quarantine", systemImage: "trash")
+                Label("Delete Permanently", systemImage: "trash.fill")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(GlassButtonStyle(color: AppColors.accentRed))
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentRed, isProminent: false))
         }
     }
 }

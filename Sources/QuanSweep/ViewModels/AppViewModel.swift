@@ -55,6 +55,9 @@ final class AppViewModel: ObservableObject {
     @Published var installedAppSearchText = "" {
         didSet { updateDisplayInstalledApps() }
     }
+    @Published var installedAppSortOption: ScanSortOption = .name {
+        didSet { updateDisplayInstalledApps() }
+    }
     @Published var selectedInstalledAppIDs: Set<UUID> = []
 
     var selectedInstalledApps: [InstalledApp] {
@@ -356,6 +359,41 @@ final class AppViewModel: ObservableObject {
         await loadInstalledApps()
     }
 
+    func deleteAppPermanently(_ app: InstalledApp) async {
+        guard FileSystem.fileExists(at: app.path) else {
+            statusMessage = "App not found at \(app.path)"
+            return
+        }
+
+        statusMessage = "Deleting \(app.name)..."
+        var freed: UInt64 = app.size
+
+        do {
+            try FileManager.default.removeItem(atPath: app.path)
+            await AuditLogger.shared.log(action: "delete", path: app.path, size: app.size, details: "Permanently deleted \(app.name)")
+        } catch {
+            statusMessage = "Could not delete \(app.name): \(error.localizedDescription)"
+            return
+        }
+
+        // Also remove related residue paths.
+        let residuePaths = InstalledApps.relatedResiduePaths(for: app)
+        for path in residuePaths where FileSystem.fileExists(at: path) {
+            let size = FileSystem.directorySize(at: path)
+            do {
+                try FileManager.default.removeItem(atPath: path)
+                freed += size
+                await AuditLogger.shared.log(action: "delete", path: path, size: size, details: "Related file for \(app.name)")
+            } catch {
+                // Continue deleting other paths even if one fails.
+                continue
+            }
+        }
+
+        statusMessage = "Permanently deleted \(app.name) and related files."
+        await loadInstalledApps()
+    }
+
     // MARK: - Utilities
 
     @discardableResult
@@ -432,11 +470,21 @@ final class AppViewModel: ObservableObject {
 
     private func updateDisplayInstalledApps() {
         let search = installedAppSearchText.trimmingCharacters(in: .whitespaces).lowercased()
+        let filtered: [InstalledApp]
         if search.isEmpty {
-            displayInstalledApps = installedApps
+            filtered = installedApps
         } else {
-            displayInstalledApps = installedApps.filter {
+            filtered = installedApps.filter {
                 $0.name.lowercased().contains(search) || $0.bundleID.lowercased().contains(search)
+            }
+        }
+
+        displayInstalledApps = filtered.sorted {
+            switch installedAppSortOption {
+            case .size:       return $0.size > $1.size
+            case .name:       return $0.name.localizedStandardCompare($1.name) == .orderedAscending
+            case .date:       return $0.lastUsedAt > $1.lastUsedAt
+            case .confidence: return $0.name.localizedStandardCompare($1.name) == .orderedAscending
             }
         }
     }

@@ -163,6 +163,7 @@ QuanSweep/
 - [x] V1.2.0 — Dark neon dashboard redesign, live system monitoring, real thermal readings, animated scanning overlay
 - [x] V1.2.1 — Glassmorphism UI overhaul, responsive layout fixes, aligned tables and action buttons
 - [x] V1.2.2 — Uninstaller responsive redesign, no-wrap action buttons, proportional table columns
+- [x] V1.2.3 — Uninstaller sorting, permanent-delete option in app details
 - [ ] V1.3.0 — Signed and notarized release builds
 
 ## Contributing
