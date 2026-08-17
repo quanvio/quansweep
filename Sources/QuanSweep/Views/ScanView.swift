@@ -187,32 +187,34 @@ struct ScanView: View {
         let tableWidth = max(rightWidth - 72, 240)
 
         return VStack(spacing: 0) {
-            rightHeader
-                .padding(.horizontal, 24)
-                .padding(.top, 18)
-                .padding(.bottom, 12)
-
             if viewModel.displayCategories.isEmpty && !viewModel.isScanning {
                 emptyState
             } else {
-                tableHeader(totalWidth: tableWidth)
-                    .padding(.horizontal, 24)
-
                 ScrollView {
-                    LazyVStack(spacing: 6) {
-                        ForEach($viewModel.displayCategories) { $category in
-                            ScanCategorySection(
-                                category: $category,
-                                totalWidth: tableWidth,
-                                onSelectItem: { item in
-                                    selectedItem = item
-                                }
-                            )
+                    VStack(spacing: 0) {
+                        rightHeader
+                            .padding(.horizontal, 24)
+                            .padding(.top, 18)
+                            .padding(.bottom, 12)
+
+                        tableHeader(totalWidth: tableWidth)
+                            .padding(.horizontal, 24)
+
+                        LazyVStack(spacing: 6) {
+                            ForEach($viewModel.displayCategories) { $category in
+                                ScanCategorySection(
+                                    category: $category,
+                                    totalWidth: tableWidth,
+                                    onSelectItem: { item in
+                                        selectedItem = item
+                                    }
+                                )
+                            }
                         }
+                        .padding(.horizontal, 24)
+                        .padding(.bottom, 12)
                     }
-                    .padding(.horizontal, 24)
-                    .padding(.bottom, 12)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .frame(maxWidth: .infinity, alignment: .top)
                 }
                 .frame(maxHeight: .infinity)
 
