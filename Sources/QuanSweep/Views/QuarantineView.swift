@@ -4,6 +4,7 @@ struct QuarantineView: View {
     @EnvironmentObject var viewModel: AppViewModel
     @State private var entryToDelete: QuarantineEntry?
     @State private var showEmptyConfirmation = false
+    @State private var showBulkDeleteConfirmation = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -35,6 +36,14 @@ struct QuarantineView: View {
             }
         } message: {
             Text("This will permanently remove \(entryToDelete?.name ?? ""). It cannot be restored.")
+        }
+        .alert("Delete selected items?", isPresented: $showBulkDeleteConfirmation) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                Task { await viewModel.deleteSelectedQuarantineEntries() }
+            }
+        } message: {
+            Text("This will permanently delete \(viewModel.selectedQuarantineEntryIDs.count) selected items. They cannot be restored.")
         }
     }
 
@@ -92,29 +101,6 @@ struct QuarantineView: View {
     private var headerSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("Quarantine Folder")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(viewModel.quarantineFolderPath)
-                        .font(.system(size: 11, weight: .regular))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .help(viewModel.quarantineFolderPath)
-                }
-
-                Spacer()
-
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("Total Size")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    Text(ByteCountFormatter.string(fromByteCount: Int64(viewModel.totalQuarantineSize), countStyle: .file))
-                        .font(.system(size: 14, weight: .semibold))
-                }
-            }
-
-            HStack(spacing: 12) {
                 HStack(spacing: 6) {
                     Image(systemName: "magnifyingglass")
                         .font(.caption)
@@ -132,28 +118,70 @@ struct QuarantineView: View {
                     }
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 240)
+                .frame(width: 220)
 
                 Spacer()
 
                 Button {
                     showEmptyConfirmation = true
                 } label: {
-                    Label("Empty Quarantine", systemImage: "trash")
+                    Label("Empty All", systemImage: "trash")
                 }
                 .buttonStyle(.bordered)
                 .tint(.red)
                 .controlSize(.small)
             }
 
-            HStack(spacing: 6) {
-                Image(systemName: "info.circle")
-                    .font(.caption2)
-                Text("Items are kept for 30 days")
-                    .font(.caption2)
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(viewModel.quarantineFolderPath)
+                        .font(.system(size: 11, weight: .regular))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .help(viewModel.quarantineFolderPath)
+
+                    HStack(spacing: 6) {
+                        Image(systemName: "info.circle")
+                            .font(.caption2)
+                        Text("Items kept for 30 days · Total \(ByteCountFormatter.string(fromByteCount: Int64(viewModel.totalQuarantineSize), countStyle: .file))")
+                            .font(.caption2)
+                    }
+                    .foregroundStyle(.secondary)
+                }
+
                 Spacer()
+
+                HStack(spacing: 8) {
+                    Button {
+                        viewModel.selectAllVisibleQuarantineEntries()
+                    } label: {
+                        Text("Select All")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+
+                    Button {
+                        viewModel.deselectAllQuarantineEntries()
+                    } label: {
+                        Text("Deselect")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+
+                    Button {
+                        showBulkDeleteConfirmation = true
+                    } label: {
+                        Label("Delete Selected", systemImage: "trash")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.red)
+                    .controlSize(.small)
+                    .disabled(viewModel.selectedQuarantineEntryIDs.isEmpty)
+                }
             }
-            .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
@@ -164,11 +192,23 @@ struct QuarantineView: View {
 
 struct QuarantineEntryRow: View {
     let entry: QuarantineEntry
+    @EnvironmentObject var viewModel: AppViewModel
     let onRestore: () -> Void
     let onDelete: () -> Void
 
+    private var isSelected: Binding<Bool> {
+        Binding(
+            get: { viewModel.selectedQuarantineEntryIDs.contains(entry.id) },
+            set: { _ in viewModel.toggleQuarantineEntrySelection(entry.id) }
+        )
+    }
+
     var body: some View {
         HStack(spacing: 12) {
+            Toggle("", isOn: isSelected)
+                .toggleStyle(.checkbox)
+                .frame(width: 24)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(entry.name)
                     .font(.system(size: 13, weight: .medium))

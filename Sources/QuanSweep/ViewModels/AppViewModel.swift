@@ -35,6 +35,15 @@ final class AppViewModel: ObservableObject {
         didSet { updateDisplayQuarantineSessions() }
     }
     @Published var quarantineFolderPath = ""
+    @Published var selectedQuarantineEntryIDs: Set<UUID> = []
+
+    var selectedQuarantineEntries: [QuarantineEntry] {
+        quarantineSessions.flatMap { $0.items }.filter { selectedQuarantineEntryIDs.contains($0.id) }
+    }
+
+    var selectedQuarantineSize: UInt64 {
+        selectedQuarantineEntries.reduce(0) { $0 + $1.size }
+    }
 
     // Uninstaller
     @Published var installedApps: [InstalledApp] = []
@@ -169,8 +178,41 @@ final class AppViewModel: ObservableObject {
     func emptyQuarantine() async {
         statusMessage = "Emptying quarantine..."
         let freed = await quarantine.emptyQuarantine()
+        selectedQuarantineEntryIDs.removeAll()
         await loadQuarantine()
         statusMessage = "Freed \(ByteCountFormatter.string(fromByteCount: Int64(freed), countStyle: .file)) from quarantine."
+    }
+
+    func deleteSelectedQuarantineEntries() async {
+        let entries = selectedQuarantineEntries
+        guard !entries.isEmpty else { return }
+        statusMessage = "Deleting \(entries.count) items..."
+        var freed: UInt64 = 0
+        for entry in entries {
+            if await quarantine.deletePermanently(entry: entry) {
+                freed += entry.size
+            }
+        }
+        selectedQuarantineEntryIDs.removeAll()
+        await loadQuarantine()
+        statusMessage = "Deleted \(ByteCountFormatter.string(fromByteCount: Int64(freed), countStyle: .file)) permanently."
+    }
+
+    func toggleQuarantineEntrySelection(_ id: UUID) {
+        if selectedQuarantineEntryIDs.contains(id) {
+            selectedQuarantineEntryIDs.remove(id)
+        } else {
+            selectedQuarantineEntryIDs.insert(id)
+        }
+    }
+
+    func selectAllVisibleQuarantineEntries() {
+        let ids = displayQuarantineSessions.flatMap { $0.items.map { $0.id } }
+        selectedQuarantineEntryIDs.formUnion(ids)
+    }
+
+    func deselectAllQuarantineEntries() {
+        selectedQuarantineEntryIDs.removeAll()
     }
 
     func loadQuarantine() async {

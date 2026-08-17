@@ -34,7 +34,8 @@ enum ProtectionList {
             "\(home)/Library/Photos",
             "\(home)/Library/Safari",
             "\(home)/Library/Application Support/Google/Chrome/Default",
-            "\(home)/Library/Application Support/Firefox"
+            "\(home)/Library/Application Support/Firefox",
+            "\(home)/Library/Application Support/QuanSweep"
         ]
     }()
 
