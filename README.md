@@ -30,6 +30,8 @@ Built with native Swift + SwiftUI. No Electron, no background daemon, no network
 - **Temporary Files** — clean abandoned files in `/tmp` and your user temp folder.
 - **User Logs, Trash, Xcode Build Data** — safe, regeneratable cleanup.
 - **App Uninstaller** — remove an app from `/Applications` and its related `~/Library` files in one reversible action.
+- **Developer Caches** — clean regeneratable Go, Node, Python, Rust, Swift, Homebrew, and Playwright caches.
+- **Downloads & Installers** — find old DMGs, PKGs, ZIPs, and archives in `~/Downloads`, and flag installers whose app is already installed.
 - **Confidence Engine** — every item gets a 0–100% safety score. Only high-confidence items are selected by default.
 - **Quarantine + Undo** — cleaned items are moved, not deleted. Restore them anytime within 30 days.
 - **Search & Sort** — filter by name or path and sort scan/quarantine results by size, name, date, or confidence.
@@ -145,8 +147,9 @@ QuanSweep/
 - [x] V0.1 — App residues, caches, temp files, logs, trash, Xcode data
 - [x] V0.2 — Confidence scoring, orphan detection, search/sort, category drill-down
 - [x] V0.3 — App Uninstaller
-- [ ] V0.4 — Developer cleanup (Go, Node, Python, Rust, Xcode, Homebrew)
-- [ ] V0.5 — Downloads + installer analyzer
+- [x] V0.4 — Developer cleanup (Go, Node, Python, Rust, Xcode, Homebrew)
+- [x] V0.5 — Downloads + installer analyzer
+- [ ] V0.6 — Large files + duplicate finder
 - [ ] V0.6 — Large files + duplicate finder
 - [ ] V0.7 — AI model analyzer (GGUF, MLX, HuggingFace, Ollama)
 - [ ] V1.0 — Signed and notarized release builds

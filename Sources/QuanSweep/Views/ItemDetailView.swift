@@ -166,6 +166,7 @@ struct ItemDetailView: View {
         case "trash": return "trash"
         case "xcode": return "hammer.fill"
         case "developer": return "hammer.circle.fill"
+        case "downloads": return "arrow.down.circle.fill"
         default: return "doc"
         }
     }

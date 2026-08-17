@@ -23,8 +23,9 @@ struct ContentView: View {
                 Image(nsImage: appIcon() ?? NSImage())
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 32, height: 32)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .frame(width: 48, height: 48)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 10))
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text("QuanSweep")
@@ -88,11 +89,12 @@ struct ContentView: View {
                 } label: {
                     Text("Update")
                         .font(.system(size: 11, weight: .semibold))
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
                         .background(Color.green.opacity(0.15))
                         .foregroundStyle(.green)
                         .clipShape(Capsule())
+                        .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
                 .help("Update available: \(latest)")

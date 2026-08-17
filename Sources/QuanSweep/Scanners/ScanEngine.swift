@@ -8,7 +8,8 @@ enum ScanEngine {
         LogScanner(),
         TrashScanner(),
         XcodeScanner(),
-        DeveloperScanner()
+        DeveloperScanner(),
+        DownloadsScanner()
     ]
 
     static func scanAll(progress: ((String) -> Void)? = nil) async -> [CleanupCategory] {

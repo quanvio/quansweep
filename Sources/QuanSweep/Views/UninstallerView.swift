@@ -97,10 +97,10 @@ struct AppRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: "app")
-                .font(.system(size: 20, weight: .medium))
+            Image(systemName: "app.dashed")
+                .font(.system(size: 22, weight: .medium))
                 .foregroundStyle(Color.accentColor)
-                .frame(width: 40, height: 40)
+                .frame(width: 48, height: 48)
                 .background(Color.accentColor.opacity(0.12))
                 .clipShape(RoundedRectangle(cornerRadius: 10))
 
@@ -175,11 +175,11 @@ struct AppDetailSheet: View {
     private var header: some View {
         HStack(spacing: 16) {
             Image(systemName: "app.fill")
-                .font(.system(size: 32))
+                .font(.system(size: 40))
                 .foregroundStyle(Color.accentColor)
-                .frame(width: 64, height: 64)
+                .frame(width: 80, height: 80)
                 .background(Color.accentColor.opacity(0.12))
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .clipShape(RoundedRectangle(cornerRadius: 16))
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(app.name)

@@ -120,6 +120,10 @@ struct CategoryMiniCard: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 14) {
+                Capsule()
+                    .fill(safetyColor)
+                    .frame(width: 4, height: 36)
+
                 Image(systemName: category.icon)
                     .font(.system(size: 20, weight: .medium))
                     .foregroundStyle(Color.accentColor)
@@ -143,9 +147,30 @@ struct CategoryMiniCard: View {
                     .foregroundStyle(.secondary)
             }
             .padding(14)
-            .background(.ultraThinMaterial)
+            .background(
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        LinearGradient(
+                            colors: [.white.opacity(0.08), .clear],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                    )
+            )
             .clipShape(RoundedRectangle(cornerRadius: 14))
+            .shadow(color: .black.opacity(0.03), radius: 2, x: 0, y: 1)
         }
         .buttonStyle(.plain)
+    }
+
+    private var safetyColor: Color {
+        switch category.safety {
+        case .safe: return .green
+        case .review: return .orange
+        case .advanced: return .red
+        case .protected: return .blue
+        }
     }
 }
