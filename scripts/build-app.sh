@@ -3,7 +3,6 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
-BUILD_DIR="$ROOT_DIR/.build/release"
 APP_DIR="$ROOT_DIR/QuanSweep.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
@@ -12,19 +11,27 @@ ICONSET_DIR="$ROOT_DIR/logo/AppIcon.iconset"
 ICNS_PATH="$ROOT_DIR/logo/AppIcon.icns"
 SOURCE_ICON="$ROOT_DIR/logo/quansweep.png"
 
-echo "Building QuanSweep release..."
 cd "$ROOT_DIR"
-swift build -c release
+
+echo "Building universal release binary (arm64 + x86_64)..."
+swift build -c release --arch arm64
+swift build -c release --arch x86_64
+
+ARM64_BIN="$ROOT_DIR/.build/arm64-apple-macosx/release/QuanSweep"
+X86_64_BIN="$ROOT_DIR/.build/x86_64-apple-macosx/release/QuanSweep"
+UNIVERSAL_BIN="$ROOT_DIR/.build/QuanSweep"
+
+lipo -create "$ARM64_BIN" "$X86_64_BIN" -output "$UNIVERSAL_BIN"
 
 echo "Creating app bundle..."
 rm -rf "$APP_DIR"
 mkdir -p "$MACOS_DIR" "$RESOURCES_DIR"
 
-cp "$BUILD_DIR/QuanSweep" "$MACOS_DIR/QuanSweep"
+cp "$UNIVERSAL_BIN" "$MACOS_DIR/QuanSweep"
 cp "$SCRIPT_DIR/Info.plist" "$CONTENTS_DIR/Info.plist"
 
 # SPM may produce a resources bundle next to the executable; copy it if present.
-for resource in "$BUILD_DIR"/QuanSweep*.resources; do
+for resource in "$ROOT_DIR/.build/arm64-apple-macosx/release"/QuanSweep*.resources; do
     if [[ -d "$resource" ]]; then
         cp -R "$resource" "$RESOURCES_DIR/$(basename "$resource")"
     fi
@@ -51,6 +58,9 @@ rm -rf "$ICONSET_DIR"
 cp "$ICNS_PATH" "$RESOURCES_DIR/AppIcon.icns"
 
 chmod +x "$MACOS_DIR/QuanSweep"
+
+echo "Ad-hoc signing app bundle..."
+codesign --force --deep --sign - "$APP_DIR" 2>/dev/null || true
 
 echo "Done: $APP_DIR"
 echo ""

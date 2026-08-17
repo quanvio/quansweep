@@ -58,7 +58,17 @@ curl -fsSL https://raw.githubusercontent.com/quanvio/quansweep/main/scripts/inst
 
 ### First launch
 
-Because QuanSweep is distributed directly rather than through the Mac App Store, macOS may ask you to approve the first launch. Right-click `QuanSweep.app` → **Open**, or approve it in **System Settings → Privacy & Security**.
+Because QuanSweep is distributed directly rather than through the Mac App Store, macOS may show a security warning on first launch.
+
+**If you see “QuanSweep is damaged and can’t be opened”:**
+
+Run this in Terminal to remove the download quarantine flag:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/QuanSweep.app
+```
+
+Then right-click `QuanSweep.app` → **Open**, or approve it in **System Settings → Privacy & Security**.
 
 ## How to use
 

@@ -32,6 +32,9 @@ if [[ ! -d "${INSTALL_DIR}/QuanSweep.app" ]]; then
 fi
 
 echo "==> QuanSweep installed at ${INSTALL_DIR}/QuanSweep.app"
+echo "==> Removing macOS quarantine flag..."
+xattr -dr com.apple.quarantine "${INSTALL_DIR}/QuanSweep.app" 2>/dev/null || true
+
 echo ""
 echo "Because QuanSweep is distributed directly rather than through the Mac App Store,"
 echo "macOS may ask you to approve the first launch:"
