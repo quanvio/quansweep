@@ -368,10 +368,10 @@ struct ScanView: View {
         let minWidth: CGFloat = 680
         let width = max(totalWidth, minWidth)
         let checkbox: CGFloat = 24
-        let actions: CGFloat = max(80, width * 0.10)
-        let confidence: CGFloat = max(110, width * 0.14)
-        let size: CGFloat = 75
-        let items: CGFloat = 55
+        let actions: CGFloat = max(70, width * 0.09)
+        let confidence: CGFloat = max(100, width * 0.13)
+        let size: CGFloat = 70
+        let items: CGFloat = 50
         let name: CGFloat = width - checkbox - confidence - size - items - actions - 60
         return ColumnWidths(checkbox: checkbox, name: max(name, 160), confidence: confidence, size: size, items: items, actions: actions)
     }
@@ -379,26 +379,69 @@ struct ScanView: View {
     // MARK: - Empty State
 
     private var emptyState: some View {
-        VStack(spacing: 14) {
-            Image(systemName: "magnifyingglass.circle")
-                .font(.system(size: 48))
-                .foregroundStyle(AppColors.accentCyan)
+        VStack(spacing: 0) {
+            Spacer()
+
+            ZStack {
+                Circle()
+                    .fill(AppColors.accentCyan.opacity(0.08))
+                    .frame(width: 140, height: 140)
+                    .blur(radius: 20)
+
+                Image(systemName: "magnifyingglass.circle")
+                    .font(.system(size: 64, weight: .light))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [AppColors.accentCyan, AppColors.accentBlue],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .shadow(color: AppColors.accentCyan.opacity(0.5), radius: 18, x: 0, y: 0)
+            }
+            .padding(.bottom, 24)
 
             Text("No scan yet")
-                .font(.title2.weight(.semibold))
+                .font(.system(size: 22, weight: .bold))
                 .foregroundStyle(.white)
+                .padding(.bottom, 6)
 
             Text("Start a scan to see what QuanSweep can safely clean.\nNothing is deleted permanently — items are moved to Quarantine first.")
+                .font(.system(size: 13))
                 .foregroundStyle(AppColors.textSecondary)
                 .multilineTextAlignment(.center)
-                .frame(maxWidth: 420)
-                .font(.system(size: 12))
+                .lineSpacing(3)
+                .frame(maxWidth: 460)
+                .padding(.bottom, 28)
 
-            Button("Start Scan") {
+            Button {
                 Task { await viewModel.scan() }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "sparkles")
+                        .font(.system(size: 13, weight: .semibold))
+                    Text("Start Smart Scan")
+                        .font(.system(size: 13, weight: .semibold))
+                }
+                .padding(.horizontal, 20)
+                .padding(.vertical, 10)
+                .background(
+                    LinearGradient(
+                        colors: [AppColors.accentCyan.opacity(0.18), AppColors.accentBlue.opacity(0.12)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .foregroundStyle(AppColors.accentCyan)
+                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .stroke(AppColors.accentCyan.opacity(0.45), lineWidth: 1)
+                )
             }
-            .buttonStyle(GlassButtonStyle(color: AppColors.accentCyan))
-            .padding(.top, 8)
+            .buttonStyle(.plain)
+
+            Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -478,69 +521,99 @@ struct ScanCategorySection: View {
         )
     }
 
+    private var aggregate: (safety: SafetyLevel, confidence: Int) {
+        let unlocked = category.items.filter { !$0.isLocked }
+        if unlocked.isEmpty { return (.protected, 0) }
+
+        let totalSize = max(unlocked.reduce(0) { $0 + $1.size }, 1)
+        let weightedConfidence = unlocked.reduce(0) { $0 + Double($1.confidence) * Double($1.size) } / Double(totalSize)
+
+        let safetyOrder: [SafetyLevel] = [.protected, .safe, .review, .advanced]
+        let worstSafety = unlocked.map(\.safety).max { safetyOrder.firstIndex(of: $0)! < safetyOrder.firstIndex(of: $1)! } ?? .safe
+
+        return (worstSafety, Int(round(weightedConfidence)))
+    }
+
     var body: some View {
         let widths = ScanView.columnWidths(for: totalWidth)
-        let color = categoryColor(category)
+        let color = safetyColor(aggregate.safety)
 
         VStack(spacing: 0) {
             Button {
                 toggleExpanded(category.id)
             } label: {
-                HStack(spacing: 12) {
-                    Toggle("", isOn: allItemsSelected)
-                        .toggleStyle(.checkbox)
-                        .frame(width: widths.checkbox)
+                HStack(spacing: 0) {
+                    RoundedRectangle(cornerRadius: 0)
+                        .fill(color)
+                        .frame(width: 3)
 
-                    HStack(spacing: 10) {
-                        Image(systemName: category.icon)
-                            .font(.system(size: 16))
-                            .foregroundStyle(color)
-                            .frame(width: 34, height: 34)
-                            .background(color.opacity(0.10))
-                            .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
+                    HStack(spacing: 12) {
+                        Toggle("", isOn: allItemsSelected)
+                            .toggleStyle(.checkbox)
+                            .frame(width: widths.checkbox)
 
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text(category.name)
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .lineLimit(1)
+                        HStack(spacing: 10) {
+                            Image(systemName: category.icon)
+                                .font(.system(size: 16))
+                                .foregroundStyle(color)
+                                .frame(width: 34, height: 34)
+                                .background(color.opacity(0.10))
+                                .clipShape(RoundedRectangle(cornerRadius: 9, style: .continuous))
 
-                            Text(category.description)
-                                .font(.system(size: 10))
-                                .foregroundStyle(AppColors.textSecondary)
-                                .lineLimit(1)
+                            VStack(alignment: .leading, spacing: 1) {
+                                Text(category.name)
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .lineLimit(1)
+
+                                Text(category.description)
+                                    .font(.system(size: 10))
+                                    .foregroundStyle(AppColors.textSecondary)
+                                    .lineLimit(1)
+                            }
                         }
-                    }
-                    .frame(width: widths.name, alignment: .leading)
+                        .frame(width: widths.name, alignment: .leading)
 
-                    Spacer()
+                        Spacer()
 
-                    Text("—")
-                        .font(.system(size: 10))
-                        .foregroundStyle(AppColors.textMuted)
+                        HStack(spacing: 6) {
+                            Text("\(aggregate.confidence)%")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(color)
+
+                            Text(aggregate.safety.rawValue)
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundStyle(color)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 3)
+                        .background(color.opacity(0.10))
+                        .clipShape(Capsule())
+                        .overlay(Capsule().stroke(color.opacity(0.30), lineWidth: 1))
                         .frame(width: widths.confidence, alignment: .leading)
 
-                    Text(ByteCountFormatter.string(fromByteCount: Int64(category.totalSize), countStyle: .file))
-                        .font(.system(size: 12).monospacedDigit())
-                        .foregroundStyle(AppColors.textSecondary)
-                        .frame(width: widths.size, alignment: .trailing)
-                        .lineLimit(1)
+                        Text(ByteCountFormatter.string(fromByteCount: Int64(category.totalSize), countStyle: .file))
+                            .font(.system(size: 12).monospacedDigit())
+                            .foregroundStyle(AppColors.textSecondary)
+                            .frame(width: widths.size, alignment: .trailing)
+                            .lineLimit(1)
 
-                    Text("\(category.items.count)")
-                        .font(.system(size: 11).monospacedDigit())
-                        .foregroundStyle(AppColors.textMuted)
-                        .frame(width: widths.items, alignment: .trailing)
-                        .lineLimit(1)
-
-                    HStack(spacing: 8) {
-                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                            .font(.system(size: 11))
+                        Text("\(category.items.count)")
+                            .font(.system(size: 11).monospacedDigit())
                             .foregroundStyle(AppColors.textMuted)
+                            .frame(width: widths.items, alignment: .trailing)
+                            .lineLimit(1)
+
+                        HStack(spacing: 8) {
+                            Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                                .font(.system(size: 11))
+                                .foregroundStyle(AppColors.textMuted)
+                        }
+                        .frame(width: widths.actions, alignment: .trailing)
                     }
-                    .frame(width: widths.actions, alignment: .trailing)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
                 .background(AppColors.cardBackground)
                 .overlay(RoundedRectangle(cornerRadius: 10).stroke(color.opacity(0.18), lineWidth: 1))
                 .clipShape(RoundedRectangle(cornerRadius: 10))
@@ -572,8 +645,8 @@ struct ScanCategorySection: View {
         }
     }
 
-    private func categoryColor(_ category: CleanupCategory) -> Color {
-        switch category.safety {
+    private func safetyColor(_ safety: SafetyLevel) -> Color {
+        switch safety {
         case .safe: return AppColors.accentGreen
         case .review: return AppColors.accentOrange
         case .advanced: return AppColors.accentRed
@@ -597,87 +670,106 @@ struct ScanItemRow: View {
         )
     }
 
+    private var realIcon: NSImage? {
+        let fm = FileManager.default
+        var path = item.path
+        if !fm.fileExists(atPath: path) {
+            if let appPath = item.appName.flatMap({ appName -> String? in
+                let candidates = [
+                    "/Applications/\(appName).app",
+                    NSHomeDirectory() + "/Applications/\(appName).app"
+                ]
+                return candidates.first { fm.fileExists(atPath: $0) }
+            }) {
+                path = appPath
+            }
+        }
+        return fm.fileExists(atPath: path) ? NSWorkspace.shared.icon(forFile: path) : nil
+    }
+
     var body: some View {
         let widths = ScanView.columnWidths(for: totalWidth)
         let color = safetyColor(item.safety)
 
-        HStack(spacing: 12) {
-            Toggle("", isOn: isSelected)
-                .toggleStyle(.checkbox)
-                .disabled(item.isLocked)
-                .frame(width: widths.checkbox)
+        HStack(spacing: 0) {
+            RoundedRectangle(cornerRadius: 0)
+                .fill(color.opacity(item.isLocked ? 0.35 : 1.0))
+                .frame(width: 3)
 
-            HStack(spacing: 10) {
-                Image(systemName: iconForCategory)
-                    .font(.system(size: 14))
-                    .foregroundStyle(color)
-                    .frame(width: 30, height: 30)
-                    .background(color.opacity(0.10))
-                    .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            HStack(spacing: 12) {
+                Toggle("", isOn: isSelected)
+                    .toggleStyle(.checkbox)
+                    .disabled(item.isLocked)
+                    .frame(width: widths.checkbox)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(item.name)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundStyle(item.isLocked ? AppColors.textMuted : .white)
-                        .lineLimit(1)
+                HStack(spacing: 10) {
+                    iconView(color: color)
+                        .frame(width: 30, height: 30)
 
-                    Text(item.reason)
-                        .font(.system(size: 10))
-                        .foregroundStyle(AppColors.textSecondary)
-                        .lineLimit(1)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(item.name)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundStyle(item.isLocked ? AppColors.textMuted : .white)
+                            .lineLimit(1)
+
+                        Text(item.reason)
+                            .font(.system(size: 10))
+                            .foregroundStyle(AppColors.textSecondary)
+                            .lineLimit(1)
+                    }
                 }
-            }
-            .frame(width: widths.name, alignment: .leading)
-            .contentShape(Rectangle())
-            .onTapGesture {
-                if !item.isLocked { onSelect() }
-            }
-
-            Spacer()
-
-            HStack(spacing: 6) {
-                Text("\(item.confidence)%")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(color)
-
-                Text(item.safety.rawValue)
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(color)
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(color.opacity(0.10))
-            .clipShape(Capsule())
-            .overlay(Capsule().stroke(color.opacity(0.30), lineWidth: 1))
-            .frame(width: widths.confidence, alignment: .leading)
-
-            Text(item.formattedSize)
-                .font(.system(size: 11).monospacedDigit())
-                .foregroundStyle(AppColors.textSecondary)
-                .frame(width: widths.size, alignment: .trailing)
-                .lineLimit(1)
-
-            Text("1")
-                .font(.system(size: 11).monospacedDigit())
-                .foregroundStyle(AppColors.textMuted)
-                .frame(width: widths.items, alignment: .trailing)
-                .lineLimit(1)
-
-            HStack(spacing: 8) {
-                Button {
-                    onSelect()
-                } label: {
-                    Image(systemName: "info.circle")
-                        .font(.system(size: 12))
-                        .foregroundStyle(AppColors.textMuted)
+                .frame(width: widths.name, alignment: .leading)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    if !item.isLocked { onSelect() }
                 }
-                .buttonStyle(.plain)
-                .help("Inspect this item")
+
+                Spacer()
+
+                HStack(spacing: 6) {
+                    Text("\(item.confidence)%")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(color)
+
+                    Text(item.safety.rawValue)
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(color)
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(color.opacity(0.10))
+                .clipShape(Capsule())
+                .overlay(Capsule().stroke(color.opacity(0.30), lineWidth: 1))
+                .frame(width: widths.confidence, alignment: .leading)
+
+                Text(item.formattedSize)
+                    .font(.system(size: 11).monospacedDigit())
+                    .foregroundStyle(AppColors.textSecondary)
+                    .frame(width: widths.size, alignment: .trailing)
+                    .lineLimit(1)
+
+                Text("1")
+                    .font(.system(size: 11).monospacedDigit())
+                    .foregroundStyle(AppColors.textMuted)
+                    .frame(width: widths.items, alignment: .trailing)
+                    .lineLimit(1)
+
+                HStack(spacing: 8) {
+                    Button {
+                        onSelect()
+                    } label: {
+                        Image(systemName: "info.circle")
+                            .font(.system(size: 12))
+                            .foregroundStyle(AppColors.textMuted)
+                    }
+                    .buttonStyle(.plain)
+                    .help("Inspect this item")
+                }
+                .frame(width: widths.actions, alignment: .trailing)
             }
-            .frame(width: widths.actions, alignment: .trailing)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
         .background(item.isLocked ? Color.white.opacity(0.02) : AppColors.cardBackground)
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color(white: 1.0, opacity: 0.05), lineWidth: 1))
         .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -685,14 +777,29 @@ struct ScanItemRow: View {
         .contentShape(Rectangle())
     }
 
-    private var safetyColor: (SafetyLevel) -> Color {
-        { safety in
-            switch safety {
-            case .safe: return AppColors.accentGreen
-            case .review: return AppColors.accentOrange
-            case .advanced: return AppColors.accentRed
-            case .protected: return AppColors.accentBlue
-            }
+    @ViewBuilder
+    private func iconView(color: Color) -> some View {
+        if let image = realIcon {
+            Image(nsImage: image)
+                .resizable()
+                .scaledToFit()
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+        } else {
+            Image(systemName: iconForCategory)
+                .font(.system(size: 13))
+                .foregroundStyle(color)
+                .frame(width: 30, height: 30)
+                .background(color.opacity(0.10))
+                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        }
+    }
+
+    private func safetyColor(_ safety: SafetyLevel) -> Color {
+        switch safety {
+        case .safe: return AppColors.accentGreen
+        case .review: return AppColors.accentOrange
+        case .advanced: return AppColors.accentRed
+        case .protected: return AppColors.accentBlue
         }
     }
 

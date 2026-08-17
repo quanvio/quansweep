@@ -14,6 +14,7 @@ struct AppColors {
     static let accentPurple = Color(.sRGB, red: 0.55, green: 0.36, blue: 0.96, opacity: 1)
     static let accentGreen = Color(.sRGB, red: 0.13, green: 0.77, blue: 0.37, opacity: 1)
     static let accentOrange = Color(.sRGB, red: 0.96, green: 0.62, blue: 0.07, opacity: 1)
+    static let accentYellow = Color(.sRGB, red: 0.95, green: 0.84, blue: 0.10, opacity: 1)
     static let accentRed = Color(.sRGB, red: 0.93, green: 0.27, blue: 0.27, opacity: 1)
 
     static let textPrimary = Color.white
