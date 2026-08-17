@@ -192,6 +192,7 @@ struct ScanView: View {
                 emptyState
             } else {
                 tableContainer(in: geo)
+                    .frame(maxHeight: .infinity)
             }
         }
         .background(AppColors.background)
@@ -278,27 +279,29 @@ struct ScanView: View {
         let rightWidth = geo.size.width - leftPanelWidth(for: geo.size.width)
         let tableWidth = max(rightWidth - 40, 500)
 
-        return VStack(spacing: 0) {
-            tableHeader(totalWidth: tableWidth)
+        return GeometryReader { tableGeo in
+            VStack(spacing: 0) {
+                tableHeader(totalWidth: tableWidth)
 
-            ScrollView {
-                LazyVStack(spacing: 6) {
-                    ForEach($viewModel.displayCategories) { $category in
-                        ScanCategorySection(
-                            category: $category,
-                            totalWidth: tableWidth,
-                            onSelectItem: { item in
-                                selectedItem = item
-                            }
-                        )
+                ScrollView {
+                    LazyVStack(spacing: 6) {
+                        ForEach($viewModel.displayCategories) { $category in
+                            ScanCategorySection(
+                                category: $category,
+                                totalWidth: tableWidth,
+                                onSelectItem: { item in
+                                    selectedItem = item
+                                }
+                            )
+                        }
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 12)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 12)
-            }
-            .frame(maxHeight: .infinity)
+                .frame(height: max(tableGeo.size.height - 64, 120))
 
-            bottomBar
+                bottomBar
+            }
         }
     }
 
