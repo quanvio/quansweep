@@ -73,14 +73,14 @@ jobs:
 
       - name: Create artifact zip
         run: |
-          zip -r QuanSweep-app.zip QuanSweep.app
-          ls -la QuanSweep-app.zip
+          zip -r artifact.zip QuanSweep.app
+          ls -la artifact.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: QuanSweep-app
-          path: QuanSweep-app.zip
+          path: artifact.zip
           if-no-files-found: error
 
   release:
@@ -97,7 +97,7 @@ jobs:
           name: QuanSweep-app
 
       - name: Extract artifact
-        run: unzip -q QuanSweep-app.zip
+        run: unzip -q artifact.zip
 
       - name: Create release zip
         run: |
@@ -110,7 +110,6 @@ jobs:
           cd "$CLEAN_DIR"
           zip -r -X "$GITHUB_WORKSPACE/QuanSweep-${VERSION}.zip" QuanSweep.app
           cd "$GITHUB_WORKSPACE"
-          rm -f QuanSweep-app.zip
           ls -la QuanSweep-*.zip
 
       - name: Upload to GitHub Release
