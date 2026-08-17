@@ -261,12 +261,12 @@ struct SpeedometerGauge: View {
 
                     Path { path in
                         path.move(to: CGPoint(
-                            x: geo.size.width / 2 + cos(innerRad) * inner,
-                            y: geo.size.height / 2 + sin(innerRad) * inner
+                            x: geo.size.width / 2 + Darwin.cos(innerRad) * inner,
+                            y: geo.size.height / 2 + Darwin.sin(innerRad) * inner
                         ))
                         path.addLine(to: CGPoint(
-                            x: geo.size.width / 2 + cos(outerRad) * outer,
-                            y: geo.size.height / 2 + sin(outerRad) * outer
+                            x: geo.size.width / 2 + Darwin.cos(outerRad) * outer,
+                            y: geo.size.height / 2 + Darwin.sin(outerRad) * outer
                         ))
                     }
                     .stroke(Color.white.opacity(isMajor ? 0.25 : 0.10), style: StrokeStyle(lineWidth: isMajor ? 1.5 : 0.8, lineCap: .round))
@@ -346,12 +346,12 @@ private struct NeedleShape: Shape {
     func path(in rect: CGRect) -> Path {
         let center = CGPoint(x: rect.midX, y: rect.midY)
         let rad = angle * .pi / 180
-        let tip = CGPoint(x: center.x + cos(rad) * length, y: center.y + sin(rad) * length)
+        let tip = CGPoint(x: center.x + Darwin.cos(rad) * length, y: center.y + Darwin.sin(rad) * length)
         let tailAngle1 = (angle + 180 - 25) * .pi / 180
         let tailAngle2 = (angle + 180 + 25) * .pi / 180
         let tailLength = length * 0.18
-        let tail1 = CGPoint(x: center.x + cos(tailAngle1) * tailLength, y: center.y + sin(tailAngle1) * tailLength)
-        let tail2 = CGPoint(x: center.x + cos(tailAngle2) * tailLength, y: center.y + sin(tailAngle2) * tailLength)
+        let tail1 = CGPoint(x: center.x + Darwin.cos(tailAngle1) * tailLength, y: center.y + Darwin.sin(tailAngle1) * tailLength)
+        let tail2 = CGPoint(x: center.x + Darwin.cos(tailAngle2) * tailLength, y: center.y + Darwin.sin(tailAngle2) * tailLength)
 
         var path = Path()
         path.move(to: tip)
