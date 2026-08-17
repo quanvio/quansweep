@@ -91,11 +91,14 @@ jobs:
           path: scripts/Info.plist
           if-no-files-found: error
 
+      - name: Copy artifact
+        run: cp QuanSweep-1.2.5.zip QuanSweep-app-1.2.5.zip
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: QuanSweep-app
-          path: QuanSweep-1.2.5.zip
+          path: QuanSweep-app-1.2.5.zip
           if-no-files-found: error
 
   release:
