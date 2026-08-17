@@ -212,6 +212,7 @@ struct ScanView: View {
                     }
                     .padding(.horizontal, 24)
                     .padding(.bottom, 12)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 }
                 .frame(maxHeight: .infinity)
 
