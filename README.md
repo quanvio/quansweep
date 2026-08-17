@@ -175,6 +175,7 @@ QuanSweep/
 - [x] V1.2.12 — Fix Scan Results bottom bar getting pushed below the fold; scanning overlay percentage deduplication shipped in v1.2.11
 - [x] V1.2.13 — Rebuild Scan Results right panel like Quarantine/Uninstaller: no inner GeometryReader, consistent 16 pt insets, actions moved to left in bottom bar
 - [x] V1.2.14 — Force Scan Results right panel and table to fill full height from the top, removing the empty gap above the table header
+- [x] V1.2.15 — Flatten Scan Results right panel layout, align HStack to top, eliminate nested VStack that may center content
 - [ ] V1.3.0 — Signed and notarized release builds
 
 ## Contributing

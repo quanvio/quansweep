@@ -16,7 +16,7 @@ struct ScanView: View {
 
     var body: some View {
         GeometryReader { geo in
-            HStack(spacing: 0) {
+            HStack(alignment: .top, spacing: 0) {
                 leftPanel
                     .frame(width: leftPanelWidth(for: geo.size.width))
 
@@ -24,6 +24,7 @@ struct ScanView: View {
                     .background(AppColors.divider)
 
                 rightPanel(in: geo)
+                    .frame(maxHeight: .infinity, alignment: .top)
             }
         }
         .background(AppColors.background)
@@ -182,7 +183,10 @@ struct ScanView: View {
     // MARK: - Right Panel
 
     private func rightPanel(in geo: GeometryProxy) -> some View {
-        VStack(spacing: 0) {
+        let rightWidth = geo.size.width - leftPanelWidth(for: geo.size.width)
+        let tableWidth = max(rightWidth - 56, 240)
+
+        return VStack(spacing: 0) {
             rightHeader
                 .padding(.horizontal, 16)
                 .padding(.top, 18)
@@ -191,7 +195,28 @@ struct ScanView: View {
             if viewModel.displayCategories.isEmpty && !viewModel.isScanning {
                 emptyState
             } else {
-                tableContainer(in: geo)
+                tableHeader(totalWidth: tableWidth)
+                    .padding(.horizontal, 16)
+
+                ScrollView {
+                    LazyVStack(spacing: 6) {
+                        ForEach($viewModel.displayCategories) { $category in
+                            ScanCategorySection(
+                                category: $category,
+                                totalWidth: tableWidth,
+                                onSelectItem: { item in
+                                    selectedItem = item
+                                }
+                            )
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 12)
+                }
+                .frame(maxHeight: .infinity)
+
+                bottomBar
+                    .padding(.horizontal, 16)
             }
         }
         .frame(maxHeight: .infinity, alignment: .top)
@@ -274,34 +299,6 @@ struct ScanView: View {
     }
 
     // MARK: - Table
-
-    private func tableContainer(in geo: GeometryProxy) -> some View {
-        let rightWidth = geo.size.width - leftPanelWidth(for: geo.size.width)
-        let tableWidth = max(rightWidth - 56, 240)
-
-        return VStack(spacing: 0) {
-            tableHeader(totalWidth: tableWidth)
-
-            ScrollView {
-                LazyVStack(spacing: 6) {
-                    ForEach($viewModel.displayCategories) { $category in
-                        ScanCategorySection(
-                            category: $category,
-                            totalWidth: tableWidth,
-                            onSelectItem: { item in
-                                selectedItem = item
-                            }
-                        )
-                    }
-                }
-                .padding(.bottom, 12)
-            }
-
-            bottomBar
-        }
-        .frame(maxHeight: .infinity, alignment: .top)
-        .padding(.horizontal, 16)
-    }
 
     private func tableHeader(totalWidth: CGFloat) -> some View {
         let widths = Self.columnWidths(for: totalWidth)
