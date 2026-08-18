@@ -5,7 +5,7 @@
 <h1 align="center">QuanSweep</h1>
 
 <p align="center">
-  A lightweight, open-source Mac cleaner that never deletes anything permanently.
+  The <b>best free Mac cleaner</b> for macOS — clean cache, remove app leftovers, free up disk space, and uninstall apps safely. Open source and reversible.
 </p>
 
 <p align="center">
@@ -19,9 +19,9 @@
 
 ---
 
-**QuanSweep** scans your Mac for leftover files, caches, logs, and temporary data. Everything it removes is moved to a **quarantine folder** first, so you can restore it later. Nothing is deleted permanently unless you empty the quarantine yourself.
+**QuanSweep** is a free, open-source Mac cleaner that scans your Mac for leftover files, system caches, logs, temporary data, old downloads, and unused apps. Everything it removes is moved to a **quarantine folder** first, so you can restore it later. Nothing is deleted permanently unless you empty the quarantine yourself.
 
-Built with native Swift + SwiftUI. No Electron, no background daemon, no network calls.
+Built with native Swift + SwiftUI. No Electron, no background daemon, no network calls. The safest way to clean up disk space on macOS without risking your files.
 
 ## Highlights
 
