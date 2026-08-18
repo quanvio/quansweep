@@ -150,6 +150,7 @@ struct ScanView: View {
             .padding(16)
         }
         .background(AppColors.background)
+        .scrollIndicators(.hidden)
     }
 
     private func summaryPill(label: String, value: UInt64, color: Color) -> some View {
@@ -217,6 +218,7 @@ struct ScanView: View {
                     .frame(maxWidth: .infinity, alignment: .top)
                 }
                 .frame(maxHeight: .infinity)
+                .scrollIndicators(.hidden)
 
                 bottomBar
                     .padding(.horizontal, 24)
@@ -455,6 +457,7 @@ struct ScanView: View {
                 .frame(minWidth: geo.size.width, minHeight: geo.size.height)
                 .padding(.horizontal, 20)
             }
+            .scrollIndicators(.hidden)
         }
     }
 
@@ -910,6 +913,7 @@ struct ReviewSelectedSheet: View {
                     }
                     .padding(16)
                 }
+                .scrollIndicators(.hidden)
             }
 
             HStack(spacing: 12) {

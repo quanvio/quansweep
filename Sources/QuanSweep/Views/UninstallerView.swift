@@ -207,6 +207,7 @@ struct UninstallerView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 12)
             }
+            .scrollIndicators(.hidden)
 
             bottomBar
         }
@@ -566,6 +567,7 @@ struct AppDetailSheet: View {
                     }
                 }
                 .frame(maxHeight: 160)
+                .scrollIndicators(.hidden)
             }
 
             Text("Only paths under ~/Library that match this app are shown. System folders and user documents are never touched.")

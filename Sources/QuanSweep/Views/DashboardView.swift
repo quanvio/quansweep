@@ -67,6 +67,7 @@ struct DashboardView: View {
             .padding(20)
         }
         .background(AppColors.background)
+        .scrollIndicators(.hidden)
         .navigationTitle("")
         .onAppear {
             appeared = true
@@ -185,7 +186,7 @@ struct DashboardView: View {
                 value: cleanliness,
                 maxValue: 100,
                 title: "System Cleanliness",
-                subtitle: cleanliness > 80 ? "CLEAN" : "NEEDS ATTENTION",
+                subtitle: cleanliness > 80 ? "CLEAN" : "ATTENTION",
                 showScaleLabels: true
             )
             .frame(maxHeight: 220)
@@ -290,7 +291,7 @@ struct DashboardView: View {
                     .frame(width: 80, height: 28)
             }
             .padding(14)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .glassCard()
 
             Button {
@@ -302,8 +303,8 @@ struct DashboardView: View {
                     Text("START SMART SCAN")
                         .font(.system(size: 13, weight: .bold))
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .padding(.horizontal, 28)
-                .padding(.vertical, 12)
                 .background(
                     LinearGradient(
                         colors: [AppColors.accentCyan.opacity(0.22), AppColors.accentBlue.opacity(0.16)],
@@ -320,6 +321,7 @@ struct DashboardView: View {
             }
             .buttonStyle(.plain)
             .disabled(viewModel.isScanning)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
@@ -347,9 +349,10 @@ struct DashboardView: View {
                 }
             }
             .padding(14)
-            .frame(maxWidth: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
             .glassCard()
         }
+        .frame(height: 86)
     }
 
     // MARK: - Categories

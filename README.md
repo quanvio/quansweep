@@ -180,6 +180,7 @@ QuanSweep/
 - [x] V1.2.17 — Force explicit width/height on Scan Results body HStack and right panel to eliminate vertical centering; increase right panel padding to 24 pt
 - [x] V1.2.18 — Force Scan Results ScrollView content to align to top so rows sit directly under the table header
 - [x] V1.2.19 — Move Scan Results top header and table header into the same ScrollView as the rows to remove the phantom vertical gap
+- [x] V1.2.20 — Smooth animated scan progress from 0%, more visible revolving orbital rings, hidden scrollbars, dashboard polish
 - [ ] V1.3.0 — Signed and notarized release builds
 
 ## Contributing
