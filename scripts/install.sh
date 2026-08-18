@@ -63,7 +63,11 @@ echo "QuanSweep needs Full Disk Access to scan caches and residues:"
 echo "  System Settings → Privacy & Security → Full Disk Access → add QuanSweep"
 echo ""
 
-read -rp "Open QuanSweep now? [Y/n]: " answer
-if [[ "${answer:-Y}" =~ ^[Yy]$ ]]; then
-    open "${APP_PATH}"
+if [[ -t 0 ]]; then
+    read -rp "Open QuanSweep now? [Y/n]: " answer
+    if [[ "${answer:-Y}" =~ ^[Yy]$ ]]; then
+        open "${APP_PATH}"
+    fi
+else
+    echo "==> Open ${APP_PATH} to start QuanSweep."
 fi
