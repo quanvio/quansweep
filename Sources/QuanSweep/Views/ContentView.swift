@@ -16,6 +16,12 @@ struct ContentView: View {
             await viewModel.loadVersionInfo()
             await viewModel.loadInstalledApps()
             viewModel.startSystemMonitoring()
+
+            let hasLaunchedBefore = UserDefaults.standard.bool(forKey: "QuanSweepHasLaunchedBefore")
+            if !hasLaunchedBefore {
+                UserDefaults.standard.set(true, forKey: "QuanSweepHasLaunchedBefore")
+                await viewModel.scan()
+            }
         }
     }
 

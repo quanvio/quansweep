@@ -230,6 +230,14 @@ struct QuarantineView: View {
             .buttonStyle(GlassButtonStyle(color: AppColors.accentBlue, isProminent: false))
 
             Button {
+                Task { await viewModel.restoreSelectedQuarantineEntries() }
+            } label: {
+                Label("Restore Selected", systemImage: "arrow.counterclockwise")
+            }
+            .buttonStyle(GlassButtonStyle(color: AppColors.accentGreen, isProminent: false))
+            .disabled(viewModel.selectedQuarantineEntryIDs.isEmpty)
+
+            Button {
                 showBulkDeleteConfirmation = true
             } label: {
                 Label("Delete Selected", systemImage: "trash")

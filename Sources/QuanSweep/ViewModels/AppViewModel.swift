@@ -280,6 +280,22 @@ final class AppViewModel: ObservableObject {
         statusMessage = "Deleted \(ByteCountFormatter.string(fromByteCount: Int64(freed), countStyle: .file)) permanently."
     }
 
+    func restoreSelectedQuarantineEntries() async {
+        let entries = selectedQuarantineEntries
+        guard !entries.isEmpty else { return }
+        statusMessage = "Restoring \(entries.count) items..."
+        var restored: UInt64 = 0
+        for entry in entries {
+            if await quarantine.restore(entry: entry) {
+                restored += entry.size
+            }
+        }
+        selectedQuarantineEntryIDs.removeAll()
+        await loadQuarantine()
+        await rescanCategories()
+        statusMessage = "Restored \(ByteCountFormatter.string(fromByteCount: Int64(restored), countStyle: .file))."
+    }
+
     func toggleQuarantineEntrySelection(_ id: UUID) {
         if selectedQuarantineEntryIDs.contains(id) {
             selectedQuarantineEntryIDs.remove(id)

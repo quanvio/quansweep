@@ -181,6 +181,7 @@ QuanSweep/
 - [x] V1.2.18 — Force Scan Results ScrollView content to align to top so rows sit directly under the table header
 - [x] V1.2.19 — Move Scan Results top header and table header into the same ScrollView as the rows to remove the phantom vertical gap
 - [x] V1.2.20 — Smooth animated scan progress from 0%, more visible revolving orbital rings, hidden scrollbars, dashboard polish
+- [x] V1.2.21 — Quarantine bulk restore, first-launch auto-scan so new users see data immediately
 - [ ] V1.3.0 — Signed and notarized release builds
 
 ## Contributing
