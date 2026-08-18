@@ -43,6 +43,44 @@ Built with native Swift + SwiftUI. No Electron, no background daemon, no network
 - **Protection List** — system folders, documents, photos, mail, keychains, and browser profiles are never touched.
 - **Audit Log** — every action is recorded.
 
+## Screenshots
+
+<p align="center">
+  <img src="screenshots/01-dashboard.png" width="92%" alt="QuanSweep Dashboard showing system cleanliness gauge, reclaimable space, and category overview">
+  <br>
+  <sub><b>Dashboard</b> — live system overview with animated gauges and cleanup categories</sub>
+</p>
+
+<p align="center">
+  <img src="screenshots/02-scanning.png" width="92%" alt="Orbital scanning overlay showing scan progress and category icons">
+  <br>
+  <sub><b>Smart Scan</b> — orbital progress animation with real-time category feedback</sub>
+</p>
+
+<p align="center">
+  <img src="screenshots/03-scan-result-results.png" width="92%" alt="Scan Results list showing categories, confidence scores, and sizes">
+  <br>
+  <sub><b>Scan Results</b> — categorized findings with safety confidence and one-click quarantine</sub>
+</p>
+
+<p align="center">
+  <img src="screenshots/03-item-detail.png" width="92%" alt="Item detail sheet showing path, modification date, and action buttons">
+  <br>
+  <sub><b>Item Detail</b> — inspect any item before moving it to quarantine</sub>
+</p>
+
+<p align="center">
+  <img src="screenshots/04-quarantine.png" width="92%" alt="Quarantine view with restore, delete, and empty options">
+  <br>
+  <sub><b>Quarantine</b> — safely isolated items with 30-day auto-cleanup and restore</sub>
+</p>
+
+<p align="center">
+  <img src="screenshots/05-uninstaller.png" width="92%" alt="Uninstaller showing installed apps and related files to remove">
+  <br>
+  <sub><b>Uninstaller</b> — remove apps and their related ~/Library files in one reversible action</sub>
+</p>
+
 ## Requirements
 
 - macOS 14.0 (Sonoma) or later
